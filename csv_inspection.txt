@@ -1,0 +1,60 @@
+=== Base 1 ===
+Status: 200
+Total lines: 1623
+Headers / first 5 lines:
+,,,,,,,,,,,,,,,,,,,,,,,
+,No. PE,Nombre PE,No. Control,Clave UA,Plan de Estudios,Nombre UA,Grupo,SubGrupo,No. Empleado,Nom. Empleado,Tipo,Salón,Capacidad,Edificio,Horas,Categoría,LUNES,MARTES,MIÉRCOLES,JUEVES,VIERNES,SÁBADO,DOMINGO
+,71,Tronco Común de Ciencias del Mar y del Ambiente                 ,237,53881,20262,"Ciencia, Ambiente y Sociedad                                                                                                    ",1,2,24451,DE LA PE¶A NETTEL GABRIELA,P,LOB,15,15,01:00,HSM PROFR.ORD.ASIG.NIV. C     ,"05:00
+06:00",,,,,,
+,71,Tronco Común de Ciencias del Mar y del Ambiente                 ,236,53881,20262,"Ciencia, Ambiente y Sociedad                                                                                                    ",1,1,24451,DE LA PE¶A NETTEL GABRIELA,P,CCL,15,14,01:00,HSM PROFR.ORD.ASIG.NIV. C     ,,"05:00
+
+=== Base 2 ===
+Status: 200
+Total lines: 79
+Headers / first 5 lines:
+,,,,,,,,,,,,,,,,,,,,,,,
+,No. PE,Nombre PE,No. Control,Clave UA,Plan de Estudios,Nombre UA,Grupo,SubGrupo,No. Empleado,Nom. Empleado,Tipo,Salón,Capacidad,Edificio,Horas,Categoría,LUNES,MARTES,MIÉRCOLES,JUEVES,VIERNES,SÁBADO,DOMINGO
+,34,ESPECIALIDAD EN GESTIÓN AMBIENTAL,76,5651,20222,SOCIOECOSISTEMAS,401,1,12212,LEYVA AGUILERA JUANA CLAUDIA,P,0  ,10,0 ,01:00,HSM ESPEC. DOCTORADO          ,07:00 - 08:00,,,,,,
+,34,ESPECIALIDAD EN GESTIÓN AMBIENTAL,32,5655,20222,SISTEMAS DE INFORMACIÓN GEOGRÁFICA Y PERCEPCIÓN REMOTA,401,0,21567,SEINGIER  GEORGES,C,ESP,10,21,01:00,TC PROFR.ORD.CARR.TIT.N. C    ,,,,,08:00 - 09:00,,
+,34,ESPECIALIDAD EN GESTIÓN AMBIENTAL,26,5653,20222,ECONOMÍA,401,0,24910,REYES ORTA MARISA,C,ESP,10,21,01:00,TC PROFR.ORD.CARR.TIT.N. C    ,08:00 - 09:00,,,,,,
+
+=== Base 3 ===
+Status: 200
+Total lines: 7807
+Headers / first 5 lines:
+,,,,,,,,,,,,,,,,,,,,,,
+,PROFESOR: ,,,,,07360-ENRIQUEZ ANDRADE ROBERTO RAMON                                       ,,,,,,,,,,,,,,,,
+,UNIDAD ACADÉMICA: ,,,,,401-FAC. DE CIENCIAS MARINAS      ,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+,HORARIO,,LUNES,,,,,,MARTES,,MIÉRCOLES,JUEVES,,,VIERNES,SÁBADO,,,DOMINGO,,,
+
+=== Base 4 ===
+Status: 200
+Total lines: 4448
+Headers / first 5 lines:
+,,,,,,,,,,,,,,,,,,,,
+,EDIFICIO: ,,,0 ,                                                            ,,,,,,,,,,,,,,,
+,SALÓN: ,,,0  ,,,,,,,,,CAPACIDAD: ,,,,,,,
+,UNIDAD ACADÉMICA: ,,,401,FAC. DE CIENCIAS MARINAS      ,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+
+=== Correcciones CSV ===
+Status: 200
+Total lines: 30
+Headers / first 5 lines:
+ID,Fuente_remitente,Profesor_a,Asignatura,Grupo_ciclo,Tipo_actividad,Dia_actual,Horario_actual,Salon_actual,Dia_solicitado,Horario_solicitado,Salon_solicitado_nuevo,Registro_actual_completo,Registro_solicitado_completo,Tipo_de_ajuste,Estado_del_ajuste,Disponibilidad_verificada,Personas_grupo_notificados,Motivo,Accion_pendiente,Observaciones
+1,Evelia,B. Martín,No indicada,,No indicada,Lunes,08:00-09:50,CPB E14,Lunes,08:00-09:50,SPD,Asignatura no indicada | Lunes 08:00-09:50 | CPB E14,Misma asignatura | Lunes 08:00-09:50 | SPD,Cambio de salón,Cambio informado,No indicada,Docente informó el cambio,Ajuste de espacio,Actualizar horarios de puertas,Sin cambio de día ni hora
+2,Evelia,B. Martín,No indicada,,No indicada,Miércoles,09:00-10:50,CPB E14,Miércoles,09:00-10:50,SFF,Asignatura no indicada | Miércoles 09:00-10:50 | CPB E14,Misma asignatura | Miércoles 09:00-10:50 | SFF,Cambio de salón,Cambio informado,No indicada,Docente informó el cambio,Ajuste de espacio,Actualizar horarios de puertas,Sin cambio de día ni hora
+3,Evelia,B. Martín,No indicada,,No indicada,Viernes,08:00-09:50,CPB E14,Viernes,08:00-09:50,SPD,Asignatura no indicada | Viernes 08:00-09:50 | CPB E14,Misma asignatura | Viernes 08:00-09:50 | SPD,Cambio de salón,Cambio informado,No indicada,Docente informó el cambio,Ajuste de espacio,Actualizar horarios de puertas,Sin cambio de día ni hora
+4,Evelia,R. Spelz / IY,No indicada,,No indicada,Viernes,11:00-13:50,CPB E14,Viernes,11:00-13:50,IIO,Asignatura no indicada | Viernes 11:00-13:50 | CPB E14,Misma asignatura | Viernes 11:00-13:50 | IIO,Cambio de salón,Cambio informado,No indicada,Docente informó el cambio,Ajuste de espacio,Actualizar horarios de puertas,IY aparece junto al nombre en el mensaje original
+
+=== Correcciones PubHTML ===
+Status: 200
+Total lines: 81
+Headers / first 5 lines:
+<!DOCTYPE html><html><head><meta name="WS" content="efcb2f8ad04736abfef1d38a92af1a87"><script nonce="VA7utnYp_nnWMfF4jGm6GQ">window['ppConfig'] = {productName: '26981ed0d57bbad37e728ff58134270c', deleteIsEnforced:  false , sealIsEnforced:  false , heartbeatRate:  0.5 , periodicReportingRateMillis:  60000.0 , disableAllReporting:  false };(function(){'use strict';function k(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}}function l(a){var b=typeof Symbol!="undefined"&&Symbol.iterator&&a[Symbol.iterator];if(b)return b.call(a);if(typeof a.length=="number")return{next:k(a)};throw Error(String(a)+" is not an iterable or ArrayLike");}var m=typeof Object.defineProperties=="function"?Object.defineProperty:function(a,b,c){if(a==Array.prototype||a==Object.prototype)return a;a[b]=c.value;return a};
+function n(a){a=["object"==typeof globalThis&&globalThis,a,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var b=0;b<a.length;++b){var c=a[b];if(c&&c.Math==Math)return c}throw Error("Cannot find global object");}var p=n(this);function q(a,b){if(b)a:{var c=p;a=a.split(".");for(var d=0;d<a.length-1;d++){var e=a[d];if(!(e in c))break a;c=c[e]}a=a[a.length-1];d=c[a];b=b(d);b!=d&&b!=null&&m(c,a,{configurable:!0,writable:!0,value:b})}}
+q("Object.is",function(a){return a?a:function(b,c){return b===c?b!==0||1/b===1/c:b!==b&&c!==c}});q("Array.prototype.includes",function(a){return a?a:function(b,c){var d=this;d instanceof String&&(d=String(d));var e=d.length;c=c||0;for(c<0&&(c=Math.max(c+e,0));c<e;c++){var f=d[c];if(f===b||Object.is(f,b))return!0}return!1}});
+q("String.prototype.includes",function(a){return a?a:function(b,c){if(this==null)throw new TypeError("The 'this' value for String.prototype.includes must not be null or undefined");if(b instanceof RegExp)throw new TypeError("First argument to String.prototype.includes must not be a regular expression");return this.indexOf(b,c||0)!==-1}});function r(a,b,c){a("https://csp.withgoogle.com/csp/proto/"+encodeURIComponent(b),JSON.stringify(c))}function t(){var a;if((a=window.ppConfig)==null?0:a.disableAllReporting)return function(){};var b,c,d,e;return(e=(b=window)==null?void 0:(c=b.navigator)==null?void 0:(d=c.sendBeacon)==null?void 0:d.bind(navigator))!=null?e:u}function u(a,b){var c=new XMLHttpRequest;c.open("POST",a);c.send(b)}
+function v(){var a=(w=Object.prototype)==null?void 0:w.__lookupGetter__("__proto__"),b=x,c=y;return function(){var d=a.call(this),e,f,g,h;r(c,b,{type:"ACCESS_GET",origin:(f=window.location.origin)!=null?f:"unknown",report:{className:(g=d==null?void 0:(e=d.constructor)==null?void 0:e.name)!=null?g:"unknown",stackTrace:(h=Error().stack)!=null?h:"unknown"}});return d}}
+

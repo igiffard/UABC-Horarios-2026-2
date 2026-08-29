@@ -1,0 +1,6 @@
+{
+  "name": "Consulta de Horarios",
+  "description": "Consulta de Horarios para la Facultad de Ciencias Marinas - Horarios de profesores, aulas, asignaturas, grupos y disponibilidad semanal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
