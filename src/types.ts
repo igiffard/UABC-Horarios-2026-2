@@ -12,6 +12,7 @@ export interface CalendarDisplayOptions {
   showTime: boolean;
   showType: boolean;
   showCapacity: boolean;
+  showActivities: boolean; // Muestra u oculta actividades no docentes (Investigación, Tutorías, Gestión, etc.)
   density: 'compact' | 'comfortable';
 }
 
@@ -23,6 +24,7 @@ export const DEFAULT_DISPLAY_OPTIONS: CalendarDisplayOptions = {
   showTime: true,
   showType: true,
   showCapacity: true,
+  showActivities: true,
   density: 'comfortable',
 };
 

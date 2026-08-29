@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Sparkles, MapPin, User, Users, Compass, BookMarked } from 'lucide-react';
+import { AlertTriangle, Sparkles, MapPin, User, Users, Compass, BookMarked, FlaskConical } from 'lucide-react';
 import { ScheduleSession, DayName, CalendarDisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../types';
 import { CONFIG } from '../config';
 import { getSubjectColorScheme } from '../utils/colors';
+import { isActivityOrResearchSession } from '../utils/normalizer';
 import { CalendarDisplayControls } from './CalendarDisplayControls';
 
 interface WeeklyCalendarProps {
@@ -155,6 +156,16 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
   // Filter sessions that fall on Lunes..Viernes
   const validSessions = sessions.filter(s => DAYS.includes(s.dia as typeof DAYS[number]));
 
+  // Filter based on showActivities option (Investigación, Tutorías, Gestión, etc.)
+  const activeSessions = validSessions.filter(s => {
+    if (!options.showActivities && isActivityOrResearchSession(s)) {
+      return false;
+    }
+    return true;
+  });
+
+  const hiddenActivitiesCount = validSessions.length - activeSessions.length;
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       
@@ -166,13 +177,19 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
             {subtitle && <p className="text-xs text-slate-500 font-medium">{subtitle}</p>}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500">
+          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-slate-500">
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span>
               07:00 a 21:00 hrs
             </span>
-            <span className="flex items-center gap-1 font-semibold text-slate-700">
-              {validSessions.length} sesiones en total
+            <span className="flex items-center gap-1.5 font-semibold text-slate-700">
+              <span>{activeSessions.length} sesiones</span>
+              {hiddenActivitiesCount > 0 && (
+                <span className="text-[11px] font-medium text-purple-800 bg-purple-100/80 px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                  <FlaskConical className="w-3 h-3 text-purple-600" />
+                  <span>{hiddenActivitiesCount} act. ocultas</span>
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -189,7 +206,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
       {/* Mobile Day Selector (Visible on small screens) */}
       <div className="md:hidden flex items-center justify-around bg-slate-100 p-1.5 border-b border-slate-200">
         {DAYS.map((day) => {
-          const count = validSessions.filter(s => s.dia === day).length;
+          const count = activeSessions.filter(s => s.dia === day).length;
           const isSelected = selectedMobileDay === day;
           return (
             <button
@@ -221,7 +238,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
           <div className="grid grid-cols-[65px_repeat(5,1fr)] bg-slate-100/90 border-b border-slate-300 text-xs font-bold text-slate-800 uppercase tracking-wider sticky top-0 z-20">
             <div className="p-3 text-center text-slate-500 border-r border-slate-300 font-mono">Hora</div>
             {DAYS.map((day) => {
-              const dayCount = validSessions.filter(s => s.dia === day).length;
+              const dayCount = activeSessions.filter(s => s.dia === day).length;
               return (
                 <div key={day} className="p-3 text-center border-r border-slate-300 last:border-r-0 flex items-center justify-center gap-1.5">
                   <span className="font-bold text-slate-900">{day}</span>
@@ -263,7 +280,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
 
             {/* 5 Day Columns with Event Blocks */}
             {DAYS.map((day) => {
-              const daySessions = validSessions.filter(s => s.dia === day);
+              const daySessions = activeSessions.filter(s => s.dia === day);
               const positioned = computeDayLayout(daySessions);
 
               return (
@@ -302,6 +319,8 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                       session.asignatura?.toUpperCase().includes('INVESTIGACIÓN')
                     );
 
+                    const isActivity = isActivityOrResearchSession(session);
+
                     const isAscMode = options.viewMode === 'asc';
 
                     return (
@@ -309,10 +328,10 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                         key={session.id}
                         onClick={() => onSelectSession(session)}
                         style={style}
-                        title={`Click para ver detalles:\n${session.asignatura}\n${session.profesor}\n${session.aula} (${session.horaInicio} - ${session.horaFin})${isPracticaCampo ? '\n[Práctica de Campo (P)]' : ''}${isInvestigacion ? '\n[Investigación Dirigida]' : ''}`}
+                        title={`Click para ver detalles:\n${session.asignatura}\n${session.profesor}\n${session.aula} (${session.horaInicio} - ${session.horaFin})${isPracticaCampo ? '\n[Práctica de Campo (P)]' : ''}${isActivity ? '\n[Horas de Investigación / Actividad Académica]' : ''}`}
                         className={`absolute cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg hover:z-30 overflow-hidden ${
                           isAscMode
-                            ? `bg-white border-2 border-slate-700 text-slate-900 rounded-lg ${isCompact ? 'p-1' : 'p-2'} shadow-2xs`
+                            ? `bg-white border-2 ${isActivity ? 'border-purple-600 bg-purple-50/30' : 'border-slate-700'} text-slate-900 rounded-lg ${isCompact ? 'p-1' : 'p-2'} shadow-2xs`
                             : `rounded-xl ${isCompact ? 'p-1.5' : 'p-2'} border ${color.bg} ${color.border} ${color.text}`
                         } ${
                           session.hasConflict ? 'ring-2 ring-rose-500 ring-offset-1 bg-rose-50/95 !border-rose-600' : ''
@@ -344,9 +363,10 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                   </span>
                                 )}
 
-                                {options.showType && isInvestigacion && !isPracticaCampo && (
-                                  <span title="Investigación Dirigida" className="px-1 py-0.2 rounded bg-indigo-100 text-indigo-900 font-bold text-[8px] border border-indigo-300">
-                                    I
+                                {options.showType && isActivity && !isPracticaCampo && (
+                                  <span title="Horas de Investigación / Actividad Académica" className="px-1 py-0.2 rounded bg-purple-100 text-purple-900 font-bold text-[8px] border border-purple-300 flex items-center gap-0.5">
+                                    <FlaskConical className="w-2.5 h-2.5 text-purple-700" />
+                                    {!isUltraCompact && <span>Act</span>}
                                   </span>
                                 )}
 
@@ -441,10 +461,10 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                       {!isUltraCompact && <span>P</span>}
                                     </span>
                                   )}
-                                  {options.showType && isInvestigacion && !isPracticaCampo && (
-                                    <span title="Investigación Dirigida" className="p-0.5 rounded bg-indigo-100 text-indigo-800 font-bold text-[8px] flex items-center gap-0.5 px-1">
-                                      <BookMarked className="w-2.5 h-2.5 text-indigo-700 shrink-0" />
-                                      {!isUltraCompact && <span>I</span>}
+                                  {options.showType && isActivity && !isPracticaCampo && (
+                                    <span title="Horas de Investigación / Actividad Académica" className="p-0.5 rounded bg-purple-100 text-purple-900 font-bold text-[8px] flex items-center gap-0.5 px-1">
+                                      <FlaskConical className="w-2.5 h-2.5 text-purple-700 shrink-0" />
+                                      {!isUltraCompact && <span>Act</span>}
                                     </span>
                                   )}
                                   {session.isCorrection && (

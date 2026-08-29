@@ -163,3 +163,40 @@ export function formatDurationHours(durationMinutes: number): string {
   }
   return `${hours.toFixed(1)} h`;
 }
+
+/**
+ * Determina si una sesión corresponde a horas de investigación o actividades no docentes
+ * (Tutorías, Horas de Investigación, Gestión, Asesorías, etc.)
+ */
+export function isActivityOrResearchSession(session: { tipo?: string; asignatura?: string; claveUA?: string } | null | undefined): boolean {
+  if (!session) return false;
+
+  const tipo = (session.tipo || '').toUpperCase().trim();
+  if (tipo === 'A' || tipo === 'ACT' || tipo === 'ACTIVIDAD') return true;
+
+  const clave = (session.claveUA || '').trim();
+  if (clave.startsWith('0000') || clave === '000000') return true;
+
+  const asig = cleanText(session.asignatura).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (!asig) return false;
+
+  if (
+    asig.includes('INVESTIGACION') ||
+    asig.includes('INVESTIGADOR') ||
+    asig.includes('TUTORIA') ||
+    asig.includes('ASESORIA') ||
+    asig.includes('GESTION') ||
+    asig.includes('ACTIVIDAD DE APOYO') ||
+    asig.includes('APOYO A LA DOCENCIA') ||
+    asig.includes('PREPARACION DE CLASE') ||
+    asig.includes('COMISION') ||
+    asig.includes('COORDINACION') ||
+    asig.includes('DIRECCION DE TESIS') ||
+    asig.includes('HORAS DE INVESTIGACION')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+

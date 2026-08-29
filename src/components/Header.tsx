@@ -41,17 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Institution and App Branding */}
           <div className="flex items-center gap-3.5">
-            {/* Marine University Shield / Icon */}
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-white shrink-0 border border-cyan-400/30">
-              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 12h20" />
-                <path d="M20 12v8H4v-8" />
-                <path d="m4 12 8-8 8 8" />
-                <path d="M10 12v5h4v-5" />
-                <path d="M12 2a5 5 0 0 0-5 5v5h10V7a5 5 0 0 0-5-5Z" />
-              </svg>
-            </div>
-
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold tracking-wider text-cyan-400 uppercase">
