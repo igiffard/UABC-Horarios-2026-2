@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { User, BookOpen, Clock, Building2, AlertTriangle, Sparkles, Layers } from 'lucide-react';
+import { User, BookOpen, Clock, Building2, AlertTriangle, Sparkles, Layers, Printer } from 'lucide-react';
 import { ScheduleSession, DirectoryCategory } from '../types';
 import { AutocompleteInput } from './AutocompleteInput';
 import { WeeklyCalendar } from './WeeklyCalendar';
@@ -10,6 +10,7 @@ interface ProfesorViewProps {
   professors: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
+  onOpenPrintModal?: (targetType?: 'profesor', targetName?: string) => void;
   selectedEntity?: string;
 }
 
@@ -18,6 +19,7 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
   professors,
   onSelectSession,
   onOpenDirectory,
+  onOpenPrintModal,
   selectedEntity
 }) => {
   const [selectedProf, setSelectedProf] = useState<string>(selectedEntity || professors[0] || '');
@@ -176,6 +178,18 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
                 </div>
               )}
 
+              {onOpenPrintModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenPrintModal('profesor', selectedProf)}
+                  title="Imprimir o exportar ficha oficial de este docente"
+                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir Ficha</span>
+                </button>
+              )}
+
             </div>
 
           </div>
@@ -190,6 +204,7 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
           title={`Horario Semanal: ${selectedProf}`}
           subtitle="Haz clic en cualquier bloque para ver detalles completos de la sesión"
           highlightType="profesor"
+          onOpenPrintModal={() => onOpenPrintModal?.('profesor', selectedProf)}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">

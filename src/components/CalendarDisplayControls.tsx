@@ -9,18 +9,21 @@ import {
   Sparkles,
   ChevronDown,
   LayoutGrid,
-  FlaskConical
+  FlaskConical,
+  Printer
 } from 'lucide-react';
 import { CalendarDisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../types';
 
 interface CalendarDisplayControlsProps {
   options: CalendarDisplayOptions;
   onChangeOptions: (newOptions: CalendarDisplayOptions) => void;
+  onOpenPrintModal?: () => void;
 }
 
 export const CalendarDisplayControls: React.FC<CalendarDisplayControlsProps> = ({
   options,
   onChangeOptions,
+  onOpenPrintModal,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -195,6 +198,18 @@ export const CalendarDisplayControls: React.FC<CalendarDisplayControlsProps> = (
             <Check className={`w-3 h-3 ${options.showType ? 'opacity-100 text-cyan-700' : 'opacity-0'}`} />
             Tipo/Badges
           </button>
+
+          {onOpenPrintModal && (
+            <button
+              type="button"
+              onClick={onOpenPrintModal}
+              title="Abrir opciones de impresión avanzadas y exportación"
+              className="ml-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 font-semibold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            >
+              <Printer className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Imprimir / PDF</span>
+            </button>
+          )}
         </div>
 
         {/* Expandable settings button for mobile or compact view */}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Users, BookOpen, User, Building2, Clock, Layers } from 'lucide-react';
+import { Users, BookOpen, User, Building2, Clock, Layers, Printer } from 'lucide-react';
 import { ScheduleSession, DirectoryCategory } from '../types';
 import { AutocompleteInput } from './AutocompleteInput';
 import { WeeklyCalendar } from './WeeklyCalendar';
@@ -10,6 +10,7 @@ interface GrupoViewProps {
   groups: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
+  onOpenPrintModal?: (targetType?: 'grupo', targetName?: string) => void;
   selectedEntity?: string;
 }
 
@@ -18,6 +19,7 @@ export const GrupoView: React.FC<GrupoViewProps> = ({
   groups,
   onSelectSession,
   onOpenDirectory,
+  onOpenPrintModal,
   selectedEntity
 }) => {
   const [selectedGroup, setSelectedGroup] = useState<string>(selectedEntity || groups[0] || '');
@@ -198,6 +200,18 @@ export const GrupoView: React.FC<GrupoViewProps> = ({
                 </div>
               )}
 
+              {onOpenPrintModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenPrintModal('grupo', selectedGroup)}
+                  title="Imprimir u obtener PDF del horario de este grupo"
+                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir Grupo</span>
+                </button>
+              )}
+
             </div>
 
           </div>
@@ -212,6 +226,7 @@ export const GrupoView: React.FC<GrupoViewProps> = ({
           title={`Horario Semanal: Grupo ${selectedGroup}`}
           subtitle="Horario completo de clases y asignaciones para este grupo"
           highlightType="grupo"
+          onOpenPrintModal={() => onOpenPrintModal?.('grupo', selectedGroup)}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">

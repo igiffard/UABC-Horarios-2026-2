@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Building2, BookOpen, Clock, User, AlertTriangle, Sparkles, MapPin, Layers } from 'lucide-react';
+import { Building2, BookOpen, Clock, User, AlertTriangle, Sparkles, MapPin, Layers, Printer } from 'lucide-react';
 import { ScheduleSession, DirectoryCategory } from '../types';
 import { AutocompleteInput } from './AutocompleteInput';
 import { WeeklyCalendar } from './WeeklyCalendar';
@@ -10,6 +10,7 @@ interface AulaViewProps {
   classrooms: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
+  onOpenPrintModal?: (targetType?: 'aula', targetName?: string) => void;
   selectedEntity?: string;
 }
 
@@ -18,6 +19,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
   classrooms,
   onSelectSession,
   onOpenDirectory,
+  onOpenPrintModal,
   selectedEntity
 }) => {
   const [selectedRoom, setSelectedRoom] = useState<string>(selectedEntity || classrooms[0] || '');
@@ -207,6 +209,18 @@ export const AulaView: React.FC<AulaViewProps> = ({
                 </div>
               )}
 
+              {onOpenPrintModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenPrintModal('aula', selectedRoom)}
+                  title="Imprimir u obtener PDF del horario de este salón"
+                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir Aula</span>
+                </button>
+              )}
+
             </div>
 
           </div>
@@ -221,6 +235,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
           title={`Ocupación de Aula: ${selectedRoom}`}
           subtitle="Haz clic en cualquier clase para consultar detalles"
           highlightType="aula"
+          onOpenPrintModal={() => onOpenPrintModal?.('aula', selectedRoom)}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">

@@ -15,6 +15,7 @@ interface WeeklyCalendarProps {
   displayOptions?: CalendarDisplayOptions;
   onChangeDisplayOptions?: (options: CalendarDisplayOptions) => void;
   showDisplayControls?: boolean;
+  onOpenPrintModal?: () => void;
 }
 
 const START_MINUTES = CONFIG.CALENDAR.START_MINUTES; // 420 (07:00)
@@ -138,7 +139,8 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
   highlightType = 'profesor',
   displayOptions: externalOptions,
   onChangeDisplayOptions,
-  showDisplayControls = true
+  showDisplayControls = true,
+  onOpenPrintModal
 }) => {
   const [internalOptions, setInternalOptions] = useState<CalendarDisplayOptions>(DEFAULT_DISPLAY_OPTIONS);
   const options = externalOptions || internalOptions;
@@ -200,6 +202,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
         <CalendarDisplayControls
           options={options}
           onChangeOptions={handleOptionsChange}
+          onOpenPrintModal={onOpenPrintModal}
         />
       )}
 

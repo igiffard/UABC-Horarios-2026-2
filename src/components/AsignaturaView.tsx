@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BookOpen, User, Building2, Users, Clock, Sparkles, Layers } from 'lucide-react';
+import { BookOpen, User, Building2, Users, Clock, Sparkles, Layers, Printer } from 'lucide-react';
 import { ScheduleSession, DirectoryCategory } from '../types';
 import { AutocompleteInput } from './AutocompleteInput';
 import { WeeklyCalendar } from './WeeklyCalendar';
@@ -10,6 +10,7 @@ interface AsignaturaViewProps {
   subjects: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
+  onOpenPrintModal?: (targetType?: 'asignatura', targetName?: string) => void;
   selectedEntity?: string;
 }
 
@@ -18,6 +19,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
   subjects,
   onSelectSession,
   onOpenDirectory,
+  onOpenPrintModal,
   selectedEntity
 }) => {
   const [selectedSubject, setSelectedSubject] = useState<string>(selectedEntity || subjects[0] || '');
@@ -168,6 +170,18 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                 <div className="text-lg font-bold text-white font-mono">{stats.totalHours}</div>
               </div>
 
+              {onOpenPrintModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenPrintModal('asignatura', selectedSubject)}
+                  title="Imprimir u obtener PDF del horario de esta asignatura"
+                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir Materia</span>
+                </button>
+              )}
+
             </div>
 
           </div>
@@ -182,6 +196,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
           title={`Horarios de la Asignatura: ${selectedSubject}`}
           subtitle="Se muestran todos los grupos y sesiones de esta materia"
           highlightType="asignatura"
+          onOpenPrintModal={() => onOpenPrintModal?.('asignatura', selectedSubject)}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">

@@ -28,6 +28,44 @@ export const DEFAULT_DISPLAY_OPTIONS: CalendarDisplayOptions = {
   density: 'comfortable',
 };
 
+export interface PrintOptions {
+  layout: 'full' | 'matrix' | 'table'; // 'full' = Matriz + Tabla + Firmas; 'matrix' = Solo Matriz; 'table' = Solo Lista de Clases
+  scope: 'current' | 'custom' | 'batch';
+  targetType: 'profesor' | 'aula' | 'grupo' | 'asignatura';
+  targetName: string;
+  showActivities: boolean; // Incluir Horas de Investigación / Actividades
+  showSignatures: boolean; // Incluir espacio de firmas oficiales
+  showStats: boolean; // Incluir caja de resumen de horas y asignaturas
+  showRoomCapacity: boolean;
+  colorMode: 'color' | 'grayscale' | 'contrast';
+  fontSize: 'compact' | 'standard' | 'large';
+  paperOrientation: 'landscape' | 'portrait';
+  includeNotes: boolean;
+  customNotes: string;
+  signerTeacher: string;
+  signerCoord: string;
+  signerDirector: string;
+}
+
+export const DEFAULT_PRINT_OPTIONS: PrintOptions = {
+  layout: 'full',
+  scope: 'current',
+  targetType: 'profesor',
+  targetName: '',
+  showActivities: true,
+  showSignatures: true,
+  showStats: true,
+  showRoomCapacity: true,
+  colorMode: 'color',
+  fontSize: 'standard',
+  paperOrientation: 'landscape',
+  includeNotes: true,
+  customNotes: 'Horario oficial sujeto a validación y cambios por la Coordinación Académica de la FCM.',
+  signerTeacher: 'Docente Titular',
+  signerCoord: 'Coordinación de Carrera',
+  signerDirector: 'Dirección de la FCM',
+};
+
 export interface ScheduleSession {
   id: string;
   source: string; // 'Base 1', 'Base 2', 'Base 3', 'Base 4', 'Base 5', 'Base 6', 'Corrección'

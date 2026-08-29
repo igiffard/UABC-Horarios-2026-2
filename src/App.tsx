@@ -22,6 +22,8 @@ import { ClassDetailModal } from './components/ClassDetailModal';
 import { CorrectionsTableModal } from './components/CorrectionsTableModal';
 import { DirectoryModal } from './components/DirectoryModal';
 import { PrintSchedule } from './components/PrintSchedule';
+import { PrintModal } from './components/PrintModal';
+import { PrintOptions, DEFAULT_PRINT_OPTIONS } from './types';
 import { CONFIG } from './config';
 import { RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react';
 
@@ -33,6 +35,8 @@ export default function App() {
   const [selectedSessionForModal, setSelectedSessionForModal] = useState<ScheduleSession | null>(null);
   const [isCorrectionsModalOpen, setIsCorrectionsModalOpen] = useState<boolean>(false);
   const [isDirectoryModalOpen, setIsDirectoryModalOpen] = useState<boolean>(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
+  const [printOptions, setPrintOptions] = useState<PrintOptions>(DEFAULT_PRINT_OPTIONS);
   const [directoryInitialCategory, setDirectoryInitialCategory] = useState<DirectoryCategory>('profesores');
   const [selectedEntityByTab, setSelectedEntityByTab] = useState<{ [key in ViewTab]?: string }>({});
   const [lastLoadedAt, setLastLoadedAt] = useState<Date>(new Date());
@@ -56,7 +60,21 @@ export default function App() {
     fetchData();
   }, [fetchData]);
 
-  const handlePrint = () => {
+  // Handler to open print modal with current context prefilled
+  const handleOpenPrintModal = useCallback((targetType?: 'profesor' | 'aula' | 'grupo' | 'asignatura', targetName?: string) => {
+    const effectiveType = targetType || (activeTab === 'disponibilidad' ? 'profesor' : activeTab);
+    const effectiveName = targetName || selectedEntityByTab[effectiveType] || '';
+    
+    setPrintOptions(prev => ({
+      ...prev,
+      targetType: effectiveType,
+      targetName: effectiveName,
+      signerTeacher: effectiveType === 'profesor' && effectiveName ? effectiveName : prev.signerTeacher
+    }));
+    setIsPrintModalOpen(true);
+  }, [activeTab, selectedEntityByTab]);
+
+  const handleExecutePrint = () => {
     window.print();
   };
 
@@ -71,6 +89,47 @@ export default function App() {
     setIsDirectoryModalOpen(false);
   };
 
+  // Filter sessions specifically for the print container
+  const printableSessionsForOutput = React.useMemo(() => {
+    if (!data) return [];
+    const type = printOptions.targetType;
+    const name = printOptions.targetName || selectedEntityByTab[type] || '';
+    
+    if (!name) {
+      // If no entity name selected, fallback to active tab or first item
+      if (type === 'profesor') return data.sessions.filter(s => s.profesor === data.professors[0]);
+      if (type === 'aula') return data.sessions.filter(s => s.aula === data.classrooms[0]);
+      if (type === 'grupo') return data.sessions.filter(s => s.grupo === data.groups[0]);
+      if (type === 'asignatura') return data.sessions.filter(s => s.asignatura === data.subjects[0]);
+      return data.sessions;
+    }
+
+    switch (type) {
+      case 'profesor':
+        return data.sessions.filter(s => s.profesor === name);
+      case 'aula':
+        return data.sessions.filter(s => s.aula === name);
+      case 'grupo':
+        return data.sessions.filter(s => s.grupo === name);
+      case 'asignatura':
+        return data.sessions.filter(s => s.asignatura === name);
+      default:
+        return data.sessions;
+    }
+  }, [data, printOptions.targetType, printOptions.targetName, selectedEntityByTab]);
+
+  const printViewTitle = React.useMemo(() => {
+    const typeLabels: Record<string, string> = {
+      profesor: 'Docente',
+      aula: 'Aula / Salón',
+      grupo: 'Grupo',
+      asignatura: 'Asignatura'
+    };
+    const label = typeLabels[printOptions.targetType] || 'Horario';
+    const name = printOptions.targetName || selectedEntityByTab[printOptions.targetType] || 'Consolidado';
+    return `${label.toUpperCase()}: ${name}`;
+  }, [printOptions.targetType, printOptions.targetName, selectedEntityByTab]);
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col selection:bg-cyan-200 selection:text-cyan-900">
       
@@ -79,7 +138,7 @@ export default function App() {
         data={data}
         isLoading={isLoading}
         onRefresh={fetchData}
-        onPrint={handlePrint}
+        onPrint={() => handleOpenPrintModal()}
         onOpenCorrectionsModal={() => setIsCorrectionsModalOpen(true)}
         onOpenDirectoryModal={() => handleOpenDirectory('profesores')}
       />
@@ -139,6 +198,7 @@ export default function App() {
                 professors={data.professors}
                 onSelectSession={setSelectedSessionForModal}
                 onOpenDirectory={handleOpenDirectory}
+                onOpenPrintModal={handleOpenPrintModal}
                 selectedEntity={selectedEntityByTab.profesor}
               />
             )}
@@ -149,6 +209,7 @@ export default function App() {
                 classrooms={data.classrooms}
                 onSelectSession={setSelectedSessionForModal}
                 onOpenDirectory={handleOpenDirectory}
+                onOpenPrintModal={handleOpenPrintModal}
                 selectedEntity={selectedEntityByTab.aula}
               />
             )}
@@ -159,6 +220,7 @@ export default function App() {
                 subjects={data.subjects}
                 onSelectSession={setSelectedSessionForModal}
                 onOpenDirectory={handleOpenDirectory}
+                onOpenPrintModal={handleOpenPrintModal}
                 selectedEntity={selectedEntityByTab.asignatura}
               />
             )}
@@ -169,6 +231,7 @@ export default function App() {
                 groups={data.groups}
                 onSelectSession={setSelectedSessionForModal}
                 onOpenDirectory={handleOpenDirectory}
+                onOpenPrintModal={handleOpenPrintModal}
                 selectedEntity={selectedEntityByTab.grupo}
               />
             )}
@@ -227,13 +290,33 @@ export default function App() {
         />
       )}
 
-      {/* Print View Container (only rendered when window.print() is called) */}
+      {/* Print Options & Export Configuration Modal */}
+      {isPrintModalOpen && data && (
+        <PrintModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          sessions={data.sessions}
+          allProfessors={data.professors}
+          allClassrooms={data.classrooms}
+          allGroups={data.groups}
+          allSubjects={data.subjects}
+          activeTab={activeTab}
+          currentEntityName={selectedEntityByTab[activeTab === 'disponibilidad' ? 'profesor' : activeTab]}
+          lastLoadedAt={lastLoadedAt}
+          printOptions={printOptions}
+          onChangePrintOptions={setPrintOptions}
+          onExecutePrint={handleExecutePrint}
+        />
+      )}
+
+      {/* Print View Container (rendered strictly during @media print) */}
       {data && (
         <PrintSchedule
-          viewTitle={`Consulta de Horario — ${activeTab.toUpperCase()}`}
-          viewSubtitle={`Facultad de Ciencias Marinas • Ciclo 2026-2`}
-          sessions={data.sessions}
+          viewTitle={printViewTitle}
+          viewSubtitle="Facultad de Ciencias Marinas • UABC Campus Ensenada"
+          sessions={printableSessionsForOutput}
           lastLoadedAt={lastLoadedAt}
+          printOptions={printOptions}
         />
       )}
 
