@@ -21,6 +21,8 @@ import { DisponibilidadView } from './components/DisponibilidadView';
 import { ClassDetailModal } from './components/ClassDetailModal';
 import { CorrectionsTableModal } from './components/CorrectionsTableModal';
 import { DirectoryModal } from './components/DirectoryModal';
+import { CampusMapModal } from './components/CampusMapModal';
+import { getBuildingById } from './data/campusBuildings';
 import { PrintSchedule } from './components/PrintSchedule';
 import { PrintModal } from './components/PrintModal';
 import { PrintOptions, DEFAULT_PRINT_OPTIONS } from './types';
@@ -36,6 +38,8 @@ export default function App() {
   const [isCorrectionsModalOpen, setIsCorrectionsModalOpen] = useState<boolean>(false);
   const [isDirectoryModalOpen, setIsDirectoryModalOpen] = useState<boolean>(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState<boolean>(false);
+  const [mapModalInitialBuilding, setMapModalInitialBuilding] = useState<string>('E-21');
   const [printOptions, setPrintOptions] = useState<PrintOptions>(DEFAULT_PRINT_OPTIONS);
   const [directoryInitialCategory, setDirectoryInitialCategory] = useState<DirectoryCategory>('profesores');
   const [selectedEntityByTab, setSelectedEntityByTab] = useState<{ [key in ViewTab]?: string }>({});
@@ -89,6 +93,23 @@ export default function App() {
     setIsDirectoryModalOpen(false);
   };
 
+  const handleOpenMapModal = useCallback((buildingId?: string) => {
+    if (buildingId) {
+      setMapModalInitialBuilding(buildingId);
+    }
+    setIsMapModalOpen(true);
+  }, []);
+
+  const handleSelectTeacher = useCallback((teacherName: string) => {
+    setSelectedEntityByTab(prev => ({ ...prev, profesor: teacherName }));
+    setActiveTab('profesor');
+  }, []);
+
+  const handleSelectRoom = useCallback((roomCode: string) => {
+    setSelectedEntityByTab(prev => ({ ...prev, aula: roomCode }));
+    setActiveTab('aula');
+  }, []);
+
   // Filter sessions specifically for the print container
   const printableSessionsForOutput = React.useMemo(() => {
     if (!data) return [];
@@ -141,6 +162,7 @@ export default function App() {
         onPrint={() => handleOpenPrintModal()}
         onOpenCorrectionsModal={() => setIsCorrectionsModalOpen(true)}
         onOpenDirectoryModal={() => handleOpenDirectory('profesores')}
+        onOpenMapModal={() => handleOpenMapModal()}
       />
 
       {/* Primary Navigation Tabs */}
@@ -210,6 +232,8 @@ export default function App() {
                 onSelectSession={setSelectedSessionForModal}
                 onOpenDirectory={handleOpenDirectory}
                 onOpenPrintModal={handleOpenPrintModal}
+                onOpenMapModal={handleOpenMapModal}
+                onSelectTeacher={handleSelectTeacher}
                 selectedEntity={selectedEntityByTab.aula}
               />
             )}
@@ -270,6 +294,32 @@ export default function App() {
           sessions={data.sessions}
           initialCategory={directoryInitialCategory}
           onSelectEntity={handleSelectDirectoryEntity}
+        />
+      )}
+
+      {/* Campus Map & Classroom Keys Modal */}
+      {isMapModalOpen && data && (
+        <CampusMapModal
+          isOpen={isMapModalOpen}
+          onClose={() => setIsMapModalOpen(false)}
+          sessions={data.sessions}
+          initialBuildingId={mapModalInitialBuilding}
+          onSelectBuilding={(buildingNumber) => {
+            const b = getBuildingById(buildingNumber);
+            if (b && b.rooms.length > 0) {
+              setSelectedEntityByTab(prev => ({ ...prev, aula: b.rooms[0] }));
+            }
+            setActiveTab('aula');
+            setIsMapModalOpen(false);
+          }}
+          onSelectRoom={(roomCode) => {
+            handleSelectRoom(roomCode);
+            setIsMapModalOpen(false);
+          }}
+          onSelectTeacher={(teacherName) => {
+            handleSelectTeacher(teacherName);
+            setIsMapModalOpen(false);
+          }}
         />
       )}
 

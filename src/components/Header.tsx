@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Printer, AlertTriangle, CheckCircle2, ShieldAlert, Layers } from 'lucide-react';
+import { RefreshCw, Printer, AlertTriangle, CheckCircle2, ShieldAlert, Layers, MapPin } from 'lucide-react';
 import { ConsolidatedData } from '../types';
 import { CONFIG } from '../config';
 
@@ -10,6 +10,7 @@ interface HeaderProps {
   onPrint: () => void;
   onOpenCorrectionsModal?: () => void;
   onOpenDirectoryModal?: () => void;
+  onOpenMapModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,7 +19,8 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   onPrint,
   onOpenCorrectionsModal,
-  onOpenDirectoryModal
+  onOpenDirectoryModal,
+  onOpenMapModal
 }) => {
   const hasCorrectionsWarning = data?.sourcesStatus?.correctionsWarning;
   const totalConflicts = data?.conflictsCount ?? 0;
@@ -59,6 +61,20 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Actions & Status Bar */}
           <div className="flex items-center flex-wrap gap-2.5">
             
+            {/* Campus Map button */}
+            {onOpenMapModal && (
+              <button
+                type="button"
+                onClick={onOpenMapModal}
+                id="btn-open-campus-map"
+                title="Ver mapa satelital de la unidad FCM, ubicación de aulas y edificios"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-700/60 text-xs font-semibold text-cyan-200 transition-colors shadow-2xs cursor-pointer"
+              >
+                <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Mapa de Aulas FCM</span>
+              </button>
+            )}
+
             {/* Directory / Catalog browser button */}
             {onOpenDirectoryModal && (
               <button
