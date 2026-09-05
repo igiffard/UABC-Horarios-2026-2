@@ -50,5 +50,28 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     motivo: 'Continuidad de las 3 horas de práctica inmediatamente después de la sesión teórica en Sala de Biología.',
     accionPendiente: 'Actualizar horario oficial UABC',
     observaciones: 'El bloque continuo de Acuaponía pasa a ser: 12:00-13:00 Teoría (SB) y 13:00-16:00 Laboratorio (LTO).'
+  },
+  {
+    id: '32',
+    fuenteRemitente: 'Emiliano Gorr / Solicitud docente y estudiantil',
+    profesor: 'GORR  EMILIANO NELSON',
+    asignatura: 'Física',
+    grupo: '302',
+    tipoActividad: 'Laboratorio',
+    diaActual: 'Jueves',
+    horarioActual: '17:00-19:00',
+    salonActual: 'SFE',
+    diaSolicitado: 'Jueves',
+    horarioSolicitado: '16:00-18:00',
+    salonSolicitadoNuevo: 'SFE',
+    registroActualCompleto: 'Física Gpo 302 Subgpo 2 | Laboratorio | Jueves 17:00-19:00 | SFE (Edificio 16)',
+    registroSolicitadoCompleto: 'Física Gpo 302 Subgpo 2 | Laboratorio | Jueves 16:00-18:00 | SFE (Edificio 16)',
+    tipoAjuste: 'Adelanto de horario (1 hora)',
+    estadoAjuste: 'Aprobado e integrado',
+    disponibilidadVerificada: 'Sí, Laboratorio SFE (Edificio 16) verificado libre los jueves de 11:00 a 17:00 h',
+    personasNotificadas: 'Docente y 8 estudiantes del grupo (acordado por unanimidad)',
+    motivo: 'El ajuste fue solicitado y acordado por unanimidad por los 8 estudiantes del grupo, con el propósito de optimizar la dinámica y los tiempos de clase, sin afectar el cumplimiento del programa.',
+    accionPendiente: 'Actualizar horario oficial UABC',
+    observaciones: 'Se adelanta una hora la sesión de laboratorio de Física (Subgrupo 2), pasando de 17:00–19:00 h a 16:00–18:00 h en el Laboratorio SFE. El laboratorio queda libre a partir de las 18:00 h.'
   }
 ];
