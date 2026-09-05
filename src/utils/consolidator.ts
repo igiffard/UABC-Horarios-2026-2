@@ -12,6 +12,8 @@ import {
 } from './parser';
 import { cleanText, normalizeSearchKey, normalizeClassroom, normalizeDay, parseTimeRange, timeToMinutes, getDayIndex } from './normalizer';
 import { CONFIG } from '../config';
+import { getClassroomDetails } from '../data/campusBuildings';
+import { ADDITIONAL_CORRECTIONS } from '../data/customCorrections';
 
 /**
  * Normaliza y empareja nombres de profesores considerando nombres parciales o formatos apellido-nombre
@@ -156,7 +158,7 @@ export function applyCorrections(
     // Buscar el registro original más específico
     let matchedIndices: number[] = [];
 
-    // Estrategia 1: Coincidencia por Profesor + Asignatura + Día (si existe) + Horario (si existe)
+    // Estrategia 1: Coincidencia por Profesor + Asignatura + Día (si existe) + Horario (si existe) + Tipo de actividad
     for (let i = 0; i < sessions.length; i++) {
       const s = sessions[i];
 
@@ -164,6 +166,21 @@ export function applyCorrections(
       const matchAsig = asigKey ? isSameSubject(s.asignatura, asigKey) : true;
       const matchGrp = grpKey && s.grupo ? isSameGroup(s.grupo, grpKey) : true;
       const matchDay = diaActual ? s.dia === diaActual : true;
+
+      let matchTipo = true;
+      if (corr.tipoActividad && corr.tipoActividad.trim().length > 0) {
+        const ca = corr.tipoActividad.toLowerCase().trim();
+        const st = (s.tipo || '').toLowerCase().trim();
+        if (ca.startsWith('c') || ca.includes('clase') || ca.includes('teor')) {
+          matchTipo = st === 'c' || st.includes('clase') || st.includes('teor');
+        } else if (ca.startsWith('l') || ca.includes('lab')) {
+          matchTipo = st === 'l' || st.includes('lab');
+        } else if (ca.startsWith('t') || ca.includes('taller')) {
+          matchTipo = st === 't' || st.includes('taller');
+        } else if (ca.startsWith('p') || ca.includes('prac')) {
+          matchTipo = st === 'p' || st.includes('prac');
+        }
+      }
       
       let matchTime = true;
       if (timeActual) {
@@ -178,8 +195,8 @@ export function applyCorrections(
         matchRoom = s.aula === roomActual || (s.aulaOriginal && s.aulaOriginal.includes(corr.salonActual));
       }
 
-      // Si tenemos profesor y asignatura coincidentes, y día/horario concuerdan
-      if (matchProf && matchAsig && (profKey || asigKey)) {
+      // Si tenemos profesor y asignatura coincidentes, y día/horario/tipo concuerdan
+      if (matchProf && matchAsig && matchTipo && (profKey || asigKey)) {
         if (diaActual && matchDay && matchTime) {
           matchedIndices.push(i);
         } else if (!diaActual && (matchRoom || matchTime || matchGrp)) {
@@ -194,13 +211,27 @@ export function applyCorrections(
         const s = sessions[i];
         if (isSameProfessor(s.profesor, profKey)) {
           const matchDay = diaActual ? s.dia === diaActual : true;
+          let matchTipo = true;
+          if (corr.tipoActividad && corr.tipoActividad.trim().length > 0) {
+            const ca = corr.tipoActividad.toLowerCase().trim();
+            const st = (s.tipo || '').toLowerCase().trim();
+            if (ca.startsWith('c') || ca.includes('clase') || ca.includes('teor')) {
+              matchTipo = st === 'c' || st.includes('clase') || st.includes('teor');
+            } else if (ca.startsWith('l') || ca.includes('lab')) {
+              matchTipo = st === 'l' || st.includes('lab');
+            } else if (ca.startsWith('t') || ca.includes('taller')) {
+              matchTipo = st === 't' || st.includes('taller');
+            } else if (ca.startsWith('p') || ca.includes('prac')) {
+              matchTipo = st === 'p' || st.includes('prac');
+            }
+          }
           let matchTime = true;
           if (timeActual) {
             const sStart = timeToMinutes(timeActual.start);
             const sEnd = timeToMinutes(timeActual.end);
             matchTime = s.startMinutes < sEnd + 15 && s.endMinutes > sStart - 15;
           }
-          if (matchDay && matchTime) {
+          if (matchDay && matchTime && matchTipo) {
             matchedIndices.push(i);
           }
         }
@@ -231,6 +262,8 @@ export function applyCorrections(
         const startMinutes = timeToMinutes(updatedStart);
         const endMinutes = timeToMinutes(updatedEnd);
         const updatedRoom = (roomNuevo && roomNuevo !== 'Sin Aula Asignada') ? roomNuevo : orig.aula;
+        const roomDetails = getClassroomDetails(updatedRoom);
+        const updatedEdificio = (roomDetails && roomDetails.buildingNumber) ? roomDetails.buildingNumber : orig.edificio;
 
         sessions[idx] = {
           ...orig,
@@ -243,6 +276,7 @@ export function applyCorrections(
           durationMinutes: Math.max(0, endMinutes - startMinutes),
           aula: updatedRoom,
           aulaOriginal: corr.salonSolicitadoNuevo || orig.aulaOriginal,
+          edificio: updatedEdificio,
           isCorrection: true,
           correctionId: corr.id,
           correctionNote: corr.observaciones || `${corr.tipoAjuste}: ${corr.estadoAjuste}`
@@ -253,6 +287,7 @@ export function applyCorrections(
       // Si no existía en la base original pero es una adición o cambio explícito, insertarlo como nuevo
       const startMinutes = timeToMinutes(timeNuevo.start);
       const endMinutes = timeToMinutes(timeNuevo.end);
+      const roomDetails = roomNuevo ? getClassroomDetails(roomNuevo) : undefined;
       sessions.push({
         id: `Corr_${corr.id}`,
         source: 'Corrección',
@@ -265,7 +300,7 @@ export function applyCorrections(
         tipo: corr.tipoActividad || 'C',
         aula: roomNuevo || 'Sin Aula Asignada',
         aulaOriginal: corr.salonSolicitadoNuevo,
-        edificio: '',
+        edificio: (roomDetails && roomDetails.buildingNumber) ? roomDetails.buildingNumber : '',
         capacidad: null,
         programa: '',
         dia: diaNuevo,
@@ -753,7 +788,17 @@ export async function loadConsolidatedSchedule(): Promise<ConsolidatedData> {
   const s5Caps = b5Text ? parseCapacidadesPorActividad(b5Text) : [];
   const s6Groups = b6Text ? parseGruposInscritos(b6Text) : [];
   const roomCapMap = b4Text ? extractRoomCapacitiesFromBase4(b4Text) : new Map();
-  const corrections = cText ? parseCorrections(cText) : [];
+  const rawCorrections = cText ? parseCorrections(cText) : [];
+  const correctionsMap = new Map<string, CorrectionRecord>();
+  for (const c of rawCorrections) {
+    correctionsMap.set(c.id, c);
+  }
+  for (const c of ADDITIONAL_CORRECTIONS) {
+    if (!correctionsMap.has(c.id)) {
+      correctionsMap.set(c.id, c);
+    }
+  }
+  const corrections = Array.from(correctionsMap.values());
 
   // Paso 1: Unificar 4 bases
   const merged = mergeFourBases(s1, s2, s3, s4);
