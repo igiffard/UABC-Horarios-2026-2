@@ -14,13 +14,13 @@
   /* Set page to Letter landscape */
   @page {
     size: letter landscape;
-    margin: 10mm 10mm 10mm 10mm;
+    margin: 8mm 8mm 8mm 8mm;
   }
 
   body {
     background-color: white !important;
     color: black !important;
-    font-size: 12pt;
+    font-size: 11pt;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -32,16 +32,18 @@
   .search-container,
   button,
   .tabs-nav,
-  .status-banner {
+  .status-banner,
+  dialog,
+  [role="dialog"] {
     display: none !important;
   }
 
   /* Ensure print section is shown and fills page */
-  .print-only {
+  .print-only,
+  .print-container,
+  #print-schedule-container {
     display: block !important;
-  }
-
-  .print-container {
+    visibility: visible !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;

@@ -1,15 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   X,
   Printer,
+  FileDown,
+  Image as ImageIcon,
   FileSpreadsheet,
-  Settings2,
-  Eye,
   Check,
-  FileText,
   Calendar,
-  Table,
-  Sliders,
+  Table as TableIcon,
+  FileText,
   User,
   Building2,
   BookOpen,
@@ -18,12 +17,22 @@ import {
   PenTool,
   Copy,
   Sparkles,
-  Info
+  Search,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Loader2,
+  CheckCircle2,
+  Layers,
+  Palette,
+  ExternalLink,
+  Smartphone
 } from 'lucide-react';
-import { ScheduleSession, PrintOptions, DEFAULT_PRINT_OPTIONS, ViewTab } from '../types';
+import { ScheduleSession, PrintOptions, ViewTab } from '../types';
 import { exportSessionsToCSV } from '../utils/exporter';
 import { isActivityOrResearchSession, formatDurationHours } from '../utils/normalizer';
-import { getSubjectColorScheme } from '../utils/colors';
+import { exportElementToPDF, exportElementToImage, printWithNativeDialog } from '../utils/pdfExport';
+import { PrintSchedule } from './PrintSchedule';
 import { CONFIG } from '../config';
 
 interface PrintModalProps {
@@ -42,12 +51,6 @@ interface PrintModalProps {
   onExecutePrint: () => void;
 }
 
-const DAYS = CONFIG.CALENDAR.DAYS;
-const HOURS = Array.from({ length: 15 }, (_, i) => {
-  const h = 7 + i;
-  return `${h.toString().padStart(2, '0')}:00`;
-});
-
 export const PrintModal: React.FC<PrintModalProps> = ({
   isOpen,
   onClose,
@@ -63,32 +66,81 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   onChangePrintOptions,
   onExecutePrint
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'config' | 'preview'>('config');
-  const [copied, setCopied] = useState(false);
-
   // Target entity for print
-  const [targetType, setTargetType] = useState<'profesor' | 'aula' | 'grupo' | 'asignatura' | 'all'>(
-    activeTab === 'disponibilidad' ? 'profesor' : activeTab
-  );
-  const [selectedEntity, setSelectedEntity] = useState<string>(
-    currentEntityName || (targetType === 'profesor' ? allProfessors[0] : allClassrooms[0]) || ''
-  );
+  const initialType: 'profesor' | 'aula' | 'grupo' | 'asignatura' = 
+    printOptions.targetType || (activeTab === 'disponibilidad' ? 'profesor' : (activeTab as any) || 'profesor');
 
-  // When targetType changes, update default selected entity
-  const handleTargetTypeChange = (type: 'profesor' | 'aula' | 'grupo' | 'asignatura' | 'all') => {
+  const [targetType, setTargetType] = useState<'profesor' | 'aula' | 'grupo' | 'asignatura'>(initialType);
+  const [selectedEntity, setSelectedEntity] = useState<string>(() => {
+    if (printOptions.targetName) return printOptions.targetName;
+    if (currentEntityName) return currentEntityName;
+    if (initialType === 'profesor') return allProfessors[0] || '';
+    if (initialType === 'aula') return allClassrooms[0] || '';
+    if (initialType === 'grupo') return allGroups[0] || '';
+    if (initialType === 'asignatura') return allSubjects[0] || '';
+    return allProfessors[0] || '';
+  });
+
+  const [searchFilter, setSearchFilter] = useState('');
+  const [zoomLevel, setZoomLevel] = useState<number>(0.85); // 85% scale fits comfortably
+  const [copied, setCopied] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isExportingImage, setIsExportingImage] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Mobile tab toggle (on desktop, both panels are shown side-by-side)
+  const [mobileTab, setMobileTab] = useState<'options' | 'preview'>('preview');
+
+  // Ref to the live preview sheet for captures
+  const previewSheetRef = useRef<HTMLDivElement>(null);
+
+  // When targetType changes, reset search and pick first item
+  const handleTargetTypeChange = (type: 'profesor' | 'aula' | 'grupo' | 'asignatura') => {
     setTargetType(type);
-    if (type === 'profesor') setSelectedEntity(allProfessors[0] || '');
-    else if (type === 'aula') setSelectedEntity(allClassrooms[0] || '');
-    else if (type === 'grupo') setSelectedEntity(allGroups[0] || '');
-    else if (type === 'asignatura') setSelectedEntity(allSubjects[0] || '');
-    else setSelectedEntity('Todas las sesiones');
+    setSearchFilter('');
+    let defaultItem = '';
+    if (type === 'profesor') defaultItem = allProfessors[0] || '';
+    else if (type === 'aula') defaultItem = allClassrooms[0] || '';
+    else if (type === 'grupo') defaultItem = allGroups[0] || '';
+    else if (type === 'asignatura') defaultItem = allSubjects[0] || '';
+    setSelectedEntity(defaultItem);
+
+    // Sync to printOptions
+    onChangePrintOptions({
+      ...printOptions,
+      targetType: type,
+      targetName: defaultItem,
+      signerTeacher: type === 'profesor' && defaultItem ? defaultItem : printOptions.signerTeacher
+    });
   };
 
-  // Filtered sessions according to target selection
-  const targetSessions = useMemo(() => {
-    if (targetType === 'all') return sessions;
-    if (!selectedEntity) return [];
+  const handleEntitySelect = (name: string) => {
+    setSelectedEntity(name);
+    onChangePrintOptions({
+      ...printOptions,
+      targetType,
+      targetName: name,
+      signerTeacher: targetType === 'profesor' ? name : printOptions.signerTeacher
+    });
+  };
 
+  // Filter list of available entities based on search box
+  const availableEntities = useMemo(() => {
+    let list: string[] = [];
+    if (targetType === 'profesor') list = allProfessors;
+    else if (targetType === 'aula') list = allClassrooms;
+    else if (targetType === 'grupo') list = allGroups;
+    else if (targetType === 'asignatura') list = allSubjects;
+
+    if (!searchFilter.trim()) return list;
+    const q = searchFilter.toLowerCase();
+    return list.filter(item => item.toLowerCase().includes(q));
+  }, [targetType, allProfessors, allClassrooms, allGroups, allSubjects, searchFilter]);
+
+  // Filtered sessions for the selected target
+  const targetSessions = useMemo(() => {
+    if (!selectedEntity) return [];
     switch (targetType) {
       case 'profesor':
         return sessions.filter(s => s.profesor === selectedEntity);
@@ -99,11 +151,11 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       case 'asignatura':
         return sessions.filter(s => s.asignatura === selectedEntity);
       default:
-        return sessions;
+        return [];
     }
   }, [sessions, targetType, selectedEntity]);
 
-  // Filtered by showActivities
+  // Filtered sessions factoring in printOptions.showActivities
   const printableSessions = useMemo(() => {
     return targetSessions.filter(s => {
       if (!printOptions.showActivities && isActivityOrResearchSession(s)) {
@@ -123,8 +175,8 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     for (const s of printableSessions) {
       totalMinutes += s.durationMinutes;
       if (s.asignatura) subjects.add(s.asignatura);
-      if (s.aula) rooms.add(s.aula);
-      if (s.grupo) groups.add(s.grupo);
+      if (s.aula && s.aula !== 'Sin Aula Asignada') rooms.add(s.aula);
+      if (s.grupo && s.grupo !== '-') groups.add(s.grupo);
     }
 
     return {
@@ -143,9 +195,101 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     });
   };
 
+  const getCleanDocTitle = () => {
+    const typeLabel = {
+      profesor: 'Docente',
+      aula: 'Aula',
+      grupo: 'Grupo',
+      asignatura: 'Materia'
+    }[targetType];
+    return `Horario_${typeLabel}_${selectedEntity || 'FCM'}`.replace(/\s+/g, '_');
+  };
+
+  const viewTitleText = useMemo(() => {
+    const typeLabel = {
+      profesor: 'Docente Titular',
+      aula: 'Aula / Laboratorio',
+      grupo: 'Grupo Estudiantil',
+      asignatura: 'Asignatura'
+    }[targetType];
+    return `${typeLabel.toUpperCase()}: ${selectedEntity}`;
+  }, [targetType, selectedEntity]);
+
+  // 1. Direct PDF Download with safety timeout
+  const handleDownloadPDF = async () => {
+    if (!previewSheetRef.current) return;
+    setIsExportingPDF(true);
+    setSuccessMessage(null);
+    try {
+      const filename = `${getCleanDocTitle()}_2026-2.pdf`;
+      await exportElementToPDF(previewSheetRef.current, {
+        filename,
+        orientation: printOptions.paperOrientation || 'landscape',
+        paperSize: 'letter',
+        quality: 0.95
+      });
+      setSuccessMessage('¡PDF descargado con éxito!');
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      setSuccessMessage('Abriendo ventana de impresión para guardar PDF...');
+      handleTriggerPrint();
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  // 2. Direct PNG Image Download
+  const handleDownloadImage = async () => {
+    if (!previewSheetRef.current) return;
+    setIsExportingImage(true);
+    setSuccessMessage(null);
+    try {
+      const filename = `${getCleanDocTitle()}_2026-2.png`;
+      await exportElementToImage(
+        previewSheetRef.current,
+        filename,
+        printOptions.paperOrientation || 'landscape'
+      );
+      setSuccessMessage('¡Imagen PNG descargada con éxito!');
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err) {
+      console.error('Error generating Image:', err);
+      setSuccessMessage('No se pudo generar la imagen. Intenta imprimir.');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } finally {
+      setIsExportingImage(false);
+    }
+  };
+
+  // 3. Connect to Laptop's Real Native Print Dialog
+  const handleTriggerPrint = async () => {
+    if (!previewSheetRef.current) return;
+    setIsPrinting(true);
+    setSuccessMessage(null);
+    try {
+      // Sync options to parent state
+      onChangePrintOptions({
+        ...printOptions,
+        targetType,
+        targetName: selectedEntity
+      });
+
+      await printWithNativeDialog(
+        previewSheetRef.current.innerHTML,
+        getCleanDocTitle(),
+        printOptions.paperOrientation || 'landscape'
+      );
+    } catch (e) {
+      console.warn('Print trigger fallback to window.print()', e);
+      window.print();
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
   const handleExportCSV = () => {
-    const prefix = targetType === 'all' ? 'Horario_General_FCM' : `Horario_${targetType}_${selectedEntity}`;
-    exportSessionsToCSV(printableSessions, prefix);
+    exportSessionsToCSV(printableSessions, getCleanDocTitle());
   };
 
   const handleCopySummary = () => {
@@ -162,585 +306,575 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePrintClick = () => {
-    // Sync title/target name in printOptions
-    onChangePrintOptions({
-      ...printOptions,
-      targetType: targetType === 'all' ? 'profesor' : targetType,
-      targetName: selectedEntity
-    });
-    onExecutePrint();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150 no-print">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-xs no-print">
       <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden text-slate-800"
+        className="bg-slate-900 text-slate-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-700 w-full max-w-7xl h-[95vh] flex flex-col overflow-hidden"
         role="dialog"
         aria-modal="true"
+        aria-label="Impresión y Exportación de Horarios"
       >
         
         {/* Modal Header */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div className="bg-slate-950 px-5 py-3.5 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-600 flex items-center justify-center text-white shadow-md shadow-cyan-600/30">
+            <div className="w-9 h-9 rounded-xl bg-cyan-600 flex items-center justify-center text-white shadow-md shadow-cyan-600/30">
               <Printer className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">Centro de Impresión y Exportación</span>
-                <span className="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.2 rounded-full border border-cyan-800">Oficial 2026-2</span>
+                <h2 className="text-base sm:text-lg font-bold text-white font-display">
+                  Imprimir y Exportar Horario
+                </h2>
+                <span className="text-[10px] bg-cyan-950 text-cyan-300 font-semibold px-2 py-0.5 rounded-full border border-cyan-800 hidden sm:inline-block">
+                  Oficial FCM 2026-2
+                </span>
               </div>
-              <h2 className="text-lg font-bold text-white font-display">
-                Configurar Impresión de Horario
-              </h2>
+              <p className="text-xs text-slate-400 hidden sm:block">
+                Visualiza la hoja en tiempo real, elige orientación Horizontal o Vertical y conéctate a la impresora de tu computadora.
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Tab switch between Config & Live Preview */}
-            <div className="bg-slate-800 p-1 rounded-xl flex items-center gap-1 border border-slate-700">
+            {/* Mobile Tab Switcher */}
+            <div className="sm:hidden flex bg-slate-800 p-1 rounded-lg border border-slate-700">
               <button
                 type="button"
-                onClick={() => setActiveSubTab('config')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  activeSubTab === 'config'
-                    ? 'bg-cyan-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                onClick={() => setMobileTab('options')}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
+                  mobileTab === 'options' ? 'bg-cyan-600 text-white' : 'text-slate-400'
                 }`}
               >
-                <Settings2 className="w-3.5 h-3.5" />
-                <span>Opciones</span>
+                Opciones
               </button>
               <button
                 type="button"
-                onClick={() => setActiveSubTab('preview')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  activeSubTab === 'preview'
-                    ? 'bg-cyan-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                onClick={() => setMobileTab('preview')}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
+                  mobileTab === 'preview' ? 'bg-cyan-600 text-white' : 'text-slate-400'
                 }`}
               >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Vista Previa</span>
+                Vista Previa
               </button>
             </div>
 
+            {/* Close Button */}
             <button
               type="button"
               onClick={onClose}
               className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Cerrar modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Modal Main Content: Split Layout */}
+        <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
           
-          {activeSubTab === 'config' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* ================= LEFT PANEL: CONTROLS & ORIENTATION ================= */}
+          <div className={`w-full sm:w-88 md:w-96 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto ${
+            mobileTab === 'preview' ? 'hidden sm:flex' : 'flex'
+          }`}>
+            <div className="p-4 space-y-4 text-xs">
               
-              {/* Left Column: Scope & Target Selector (5 cols) */}
-              <div className="lg:col-span-5 space-y-5">
-                
-                {/* 1. Target Entity Selection */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sliders className="w-4 h-4 text-cyan-600" />
-                      <span>1. Horario a Imprimir</span>
-                    </label>
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      {printableSessions.length} sesiones encontradas
-                    </span>
-                  </div>
-
-                  {/* Target Category Tabs */}
-                  <div className="grid grid-cols-4 gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => handleTargetTypeChange('profesor')}
-                      className={`py-1.5 px-2 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                        targetType === 'profesor' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <User className="w-3.5 h-3.5" />
-                      <span className="text-[10px]">Profesor</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleTargetTypeChange('aula')}
-                      className={`py-1.5 px-2 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                        targetType === 'aula' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      <span className="text-[10px]">Aula</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleTargetTypeChange('grupo')}
-                      className={`py-1.5 px-2 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                        targetType === 'grupo' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span className="text-[10px]">Grupo</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleTargetTypeChange('asignatura')}
-                      className={`py-1.5 px-2 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                        targetType === 'asignatura' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span className="text-[10px]">Materia</span>
-                    </button>
-                  </div>
-
-                  {/* Entity Dropdown Select */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                      Seleccionar {targetType === 'profesor' ? 'Docente' : targetType === 'aula' ? 'Salón / Laboratorio' : targetType === 'grupo' ? 'Grupo' : 'Asignatura'}:
-                    </label>
-                    <select
-                      value={selectedEntity}
-                      onChange={(e) => setSelectedEntity(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-cyan-500 shadow-2xs cursor-pointer"
-                    >
-                      {targetType === 'profesor' && allProfessors.map(p => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                      {targetType === 'aula' && allClassrooms.map(a => (
-                        <option key={a} value={a}>{a}</option>
-                      ))}
-                      {targetType === 'grupo' && allGroups.map(g => (
-                        <option key={g} value={g}>Grupo {g}</option>
-                      ))}
-                      {targetType === 'asignatura' && allSubjects.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Selected Entity Mini Summary Card */}
-                  <div className="bg-white p-3 rounded-xl border border-slate-200/80 text-xs space-y-1.5">
-                    <div className="font-bold text-slate-900 text-sm truncate">
-                      {selectedEntity}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1 border-t border-slate-100">
-                      <div><strong>Carga Semanal:</strong> {stats.totalHours}</div>
-                      <div><strong>Sesiones:</strong> {stats.sessionsCount}</div>
-                      <div><strong>Asignaturas:</strong> {stats.subjectsCount}</div>
-                      <div><strong>Aulas/Grupos:</strong> {stats.roomsCount} / {stats.groupsCount}</div>
-                    </div>
-                  </div>
-
+              {/* STEP 1: ENTITY SELECTION */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">1</span>
+                    ¿Qué horario deseas imprimir?
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    {stats.sessionsCount} sesiones
+                  </span>
                 </div>
 
-                {/* 2. Format & Layout Template */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-cyan-600" />
-                    <span>2. Plantilla y Diseño</span>
-                  </label>
+                {/* Target Type Selector Pills */}
+                <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => handleTargetTypeChange('profesor')}
+                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      targetType === 'profesor' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Docente</span>
+                  </button>
 
-                  <div className="space-y-2">
-                    <label
-                      onClick={() => updateOption('layout', 'full')}
-                      className={`flex items-start gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                        printOptions.layout === 'full'
-                          ? 'bg-cyan-50 border-cyan-400 text-cyan-950 font-semibold shadow-2xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="printLayout"
-                        checked={printOptions.layout === 'full'}
-                        onChange={() => updateOption('layout', 'full')}
-                        className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <div className="text-xs">
-                        <div className="font-bold">Ficha Oficial Completa (Recomendado)</div>
-                        <div className="text-[10px] text-slate-500 font-normal">
-                          Cuadrícula semanal gráfica aSc + Tabla de desglose de materias + Firmas de Vo.Bo.
-                        </div>
-                      </div>
-                    </label>
+                  <button
+                    type="button"
+                    onClick={() => handleTargetTypeChange('aula')}
+                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      targetType === 'aula' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Aula</span>
+                  </button>
 
-                    <label
-                      onClick={() => updateOption('layout', 'matrix')}
-                      className={`flex items-start gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                        printOptions.layout === 'matrix'
-                          ? 'bg-cyan-50 border-cyan-400 text-cyan-950 font-semibold shadow-2xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="printLayout"
-                        checked={printOptions.layout === 'matrix'}
-                        onChange={() => updateOption('layout', 'matrix')}
-                        className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <div className="text-xs">
-                        <div className="font-bold">Solo Matriz Semanal Gráfica</div>
-                        <div className="text-[10px] text-slate-500 font-normal">
-                          Horario tipo aSc de Lunes a Viernes optimizado para mural o carteleras.
-                        </div>
-                      </div>
-                    </label>
+                  <button
+                    type="button"
+                    onClick={() => handleTargetTypeChange('grupo')}
+                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      targetType === 'grupo' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Grupo</span>
+                  </button>
 
-                    <label
-                      onClick={() => updateOption('layout', 'table')}
-                      className={`flex items-start gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                        printOptions.layout === 'table'
-                          ? 'bg-cyan-50 border-cyan-400 text-cyan-950 font-semibold shadow-2xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="printLayout"
-                        checked={printOptions.layout === 'table'}
-                        onChange={() => updateOption('layout', 'table')}
-                        className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <div className="text-xs">
-                        <div className="font-bold">Solo Carga Académica (Tabla Detallada)</div>
-                        <div className="text-[10px] text-slate-500 font-normal">
-                          Lista detallada con claves UA, tipo de clase, horas y cupos.
-                        </div>
-                      </div>
-                    </label>
+                  <button
+                    type="button"
+                    onClick={() => handleTargetTypeChange('asignatura')}
+                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      targetType === 'asignatura' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Materia</span>
+                  </button>
+                </div>
+
+                {/* Search & Select Entity Dropdown */}
+                <div className="space-y-1.5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={`Filtrar ${targetType}...`}
+                      value={searchFilter}
+                      onChange={(e) => setSearchFilter(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                    <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
+                  </div>
+
+                  <select
+                    value={selectedEntity}
+                    onChange={(e) => handleEntitySelect(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-cyan-300 focus:outline-hidden focus:ring-2 focus:ring-cyan-500 cursor-pointer max-h-36"
+                    size={availableEntities.length > 5 ? 4 : Math.max(3, availableEntities.length)}
+                  >
+                    {availableEntities.map(name => (
+                      <option key={name} value={name} className="py-1 px-2 hover:bg-cyan-900/50">
+                        {targetType === 'grupo' ? `Grupo ${name}` : name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Selected Entity Card */}
+                <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-[11px] space-y-1">
+                  <div className="font-bold text-white truncate flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span className="truncate">{selectedEntity}</span>
+                  </div>
+                  <div className="text-slate-400 flex items-center justify-between text-[10px]">
+                    <span>Carga: <strong className="text-cyan-400">{stats.totalHours}</strong></span>
+                    <span>Materias: <strong className="text-slate-200">{stats.subjectsCount}</strong></span>
+                    <span>Salones: <strong className="text-slate-200">{stats.roomsCount}</strong></span>
                   </div>
                 </div>
 
               </div>
 
-              {/* Right Column: Detailed Print Options & Signatures (7 cols) */}
-              <div className="lg:col-span-7 space-y-5">
-                
-                {/* Content Switches */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sliders className="w-4 h-4 text-cyan-600" />
-                    <span>3. Elementos a Incluir en el Documento</span>
-                  </label>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    
-                    <label className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-slate-200 text-xs cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={printOptions.showActivities}
-                        onChange={(e) => updateOption('showActivities', e.target.checked)}
-                        className="rounded text-purple-600 focus:ring-purple-500"
-                      />
-                      <div className="flex items-center gap-1.5 font-semibold text-purple-950">
-                        <FlaskConical className="w-3.5 h-3.5 text-purple-600" />
-                        <span>Investigación / Actividades</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-slate-200 text-xs cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={printOptions.showSignatures}
-                        onChange={(e) => updateOption('showSignatures', e.target.checked)}
-                        className="rounded text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-                        <PenTool className="w-3.5 h-3.5 text-cyan-600" />
-                        <span>Espacio para Firmas de Vo.Bo.</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-slate-200 text-xs cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={printOptions.showStats}
-                        onChange={(e) => updateOption('showStats', e.target.checked)}
-                        className="rounded text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <span className="font-semibold text-slate-800">Resumen Estadístico (Hrs/Sem)</span>
-                    </label>
-
-                    <label className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-slate-200 text-xs cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={printOptions.showRoomCapacity}
-                        onChange={(e) => updateOption('showRoomCapacity', e.target.checked)}
-                        className="rounded text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <span className="font-semibold text-slate-800">Cupo y Capacidad de Salón</span>
-                    </label>
-
-                  </div>
+              {/* STEP 2: ORIENTATION SELECTOR (LANDSCAPE VS PORTRAIT) */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">2</span>
+                    Orientación de Página
+                  </span>
+                  <span className="text-[10px] text-cyan-300 font-mono">
+                    {printOptions.paperOrientation === 'landscape' ? 'Horizontal (11" × 8.5")' : 'Vertical (8.5" × 11")'}
+                  </span>
                 </div>
 
-                {/* Appearance Settings: Colors, Fonts & Orientation */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-cyan-600" />
-                    <span>4. Estilo de Impresión y Tipografía</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateOption('paperOrientation', 'landscape')}
+                    className={`p-2.5 rounded-xl border flex flex-col items-center text-center gap-1.5 transition-all cursor-pointer ${
+                      printOptions.paperOrientation === 'landscape'
+                        ? 'bg-cyan-950/90 border-cyan-400 text-white shadow-md ring-2 ring-cyan-500/50'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="w-11 h-7 rounded border-2 border-current flex items-center justify-center font-bold text-[8.5px] bg-slate-900/50">
+                      11 × 8.5
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs flex items-center gap-1 justify-center">
+                        <span>Horizontal</span>
+                        {printOptions.paperOrientation === 'landscape' && <Check className="w-3 h-3 text-cyan-400" />}
+                      </div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">Landscape (Recomendado)</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => updateOption('paperOrientation', 'portrait')}
+                    className={`p-2.5 rounded-xl border flex flex-col items-center text-center gap-1.5 transition-all cursor-pointer ${
+                      printOptions.paperOrientation === 'portrait'
+                        ? 'bg-cyan-950/90 border-cyan-400 text-white shadow-md ring-2 ring-cyan-500/50'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="w-7 h-11 rounded border-2 border-current flex items-center justify-center font-bold text-[8.5px] bg-slate-900/50">
+                      8.5 × 11
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs flex items-center gap-1 justify-center">
+                        <span>Vertical</span>
+                        {printOptions.paperOrientation === 'portrait' && <Check className="w-3 h-3 text-cyan-400" />}
+                      </div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">Portrait (Para listas)</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* STEP 3: FORMAT TEMPLATE */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+                <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">3</span>
+                  Formato del Horario
+                </span>
+
+                <div className="space-y-1.5">
+                  {/* Option 1: Matrix */}
+                  <label
+                    onClick={() => updateOption('layout', 'matrix')}
+                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      printOptions.layout === 'matrix'
+                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modalPrintLayout"
+                      checked={printOptions.layout === 'matrix'}
+                      onChange={() => updateOption('layout', 'matrix')}
+                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Cuadrícula Semanal</span>
+                        <span className="text-[9px] bg-cyan-900 text-cyan-300 px-1.5 py-0.2 rounded font-normal ml-auto">1 Página</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                        Horario visual semanal de L-V. El formato clásico y más práctico.
+                      </p>
+                    </div>
                   </label>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  {/* Option 2: Full Document */}
+                  <label
+                    onClick={() => updateOption('layout', 'full')}
+                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      printOptions.layout === 'full'
+                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modalPrintLayout"
+                      checked={printOptions.layout === 'full'}
+                      onChange={() => updateOption('layout', 'full')}
+                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Documento Completo Oficial</span>
+                        <span className="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded font-normal ml-auto">Completo</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                        Cuadrícula + Desglose detallado de materias + Firmas de validación.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* Option 3: Table Only */}
+                  <label
+                    onClick={() => updateOption('layout', 'table')}
+                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      printOptions.layout === 'table'
+                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modalPrintLayout"
+                      checked={printOptions.layout === 'table'}
+                      onChange={() => updateOption('layout', 'table')}
+                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <TableIcon className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Solo Tabla Desglosada</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                        Lista detallada de claves, tipos (C/T/L), salones y cupos.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* STEP 4: QUICK TOGGLES */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+                <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">4</span>
+                  Opciones Adicionales
+                </span>
+
+                <div className="space-y-2">
+                  <label className="flex items-center justify-between p-2 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-800/60">
+                    <div className="flex items-center gap-2 text-xs">
+                      <PenTool className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Firmas de Validación Oficial</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={printOptions.showSignatures}
+                      onChange={(e) => updateOption('showSignatures', e.target.checked)}
+                      className="rounded text-cyan-600 focus:ring-cyan-500"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-800/60">
+                    <div className="flex items-center gap-2 text-xs">
+                      <FlaskConical className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Investigación / Actividades</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={printOptions.showActivities}
+                      onChange={(e) => updateOption('showActivities', e.target.checked)}
+                      className="rounded text-purple-600 focus:ring-purple-500"
+                    />
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Color / Tinta:</label>
+                      <label className="block text-[10px] text-slate-400 mb-1">Color de Tinta:</label>
                       <select
                         value={printOptions.colorMode}
                         onChange={(e) => updateOption('colorMode', e.target.value as any)}
-                        className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 font-medium text-slate-800 focus:ring-2 focus:ring-cyan-500"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] text-slate-200"
                       >
                         <option value="color">Color Institucional</option>
-                        <option value="grayscale">Escala de Grises (Ahorro Tóner)</option>
-                        <option value="contrast">Blanco y Negro (Alto Contraste)</option>
+                        <option value="grayscale">Escala de Grises</option>
+                        <option value="contrast">Blanco y Negro</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Tamaño de Letra:</label>
+                      <label className="block text-[10px] text-slate-400 mb-1">Tamaño Letra:</label>
                       <select
                         value={printOptions.fontSize}
                         onChange={(e) => updateOption('fontSize', e.target.value as any)}
-                        className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 font-medium text-slate-800 focus:ring-2 focus:ring-cyan-500"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] text-slate-200"
                       >
-                        <option value="compact">Compacto (9pt - Más espacio)</option>
+                        <option value="compact">Compacto (9pt)</option>
                         <option value="standard">Estándar (10.5pt)</option>
                         <option value="large">Grande (12pt)</option>
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Orientación Recomendada:</label>
-                      <div className="px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-slate-700 font-semibold flex items-center justify-between">
-                        <span>Horizontal (Landscape)</span>
-                        <span className="text-[10px] text-cyan-700 bg-cyan-50 px-1.5 rounded">Carta</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
-
-                {/* Signatures Labels & Custom Notes */}
-                {printOptions.showSignatures && (
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <PenTool className="w-4 h-4 text-cyan-600" />
-                      <span>5. Títulos de las Firmas Oficiales</span>
-                    </label>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                      <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Firma 1 (Docente/Responsable):</label>
-                        <input
-                          type="text"
-                          value={printOptions.signerTeacher}
-                          onChange={(e) => updateOption('signerTeacher', e.target.value)}
-                          className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Firma 2 (Coordinación):</label>
-                        <input
-                          type="text"
-                          value={printOptions.signerCoord}
-                          onChange={(e) => updateOption('signerCoord', e.target.value)}
-                          className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-medium text-slate-500 mb-1">Firma 3 (Dirección):</label>
-                        <input
-                          type="text"
-                          value={printOptions.signerDirector}
-                          onChange={(e) => updateOption('signerDirector', e.target.value)}
-                          className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 font-medium"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Custom Notes input */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <Info className="w-4 h-4 text-cyan-600" />
-                      <span>Observaciones al Pie</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={printOptions.includeNotes}
-                        onChange={(e) => updateOption('includeNotes', e.target.checked)}
-                        className="rounded text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <span>Incluir en documento</span>
-                    </label>
-                  </div>
-                  {printOptions.includeNotes && (
-                    <input
-                      type="text"
-                      value={printOptions.customNotes}
-                      onChange={(e) => updateOption('customNotes', e.target.value)}
-                      placeholder="Ej. Horario sujeto a validación y cambios por la Coordinación..."
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:ring-2 focus:ring-cyan-500"
-                    />
-                  )}
-                </div>
-
               </div>
 
             </div>
-          ) : (
-            /* Live Preview tab */
-            <div className="bg-slate-200/80 p-4 sm:p-6 rounded-2xl border border-slate-300 flex justify-center overflow-x-auto">
-              <div className="bg-white shadow-xl rounded-lg p-6 w-full max-w-4xl text-slate-900 border border-slate-300 transform origin-top scale-95">
-                
-                {/* Mock Live Document Header */}
-                <div className="border-b-2 border-slate-900 pb-2 mb-3 flex items-start justify-between">
-                  <div>
-                    <div className="text-[10px] font-bold tracking-wider text-slate-600 uppercase">
-                      Universidad Autónoma de Baja California • Facultad de Ciencias Marinas
-                    </div>
-                    <div className="text-base font-black tracking-tight text-slate-950 font-serif">
-                      {CONFIG.APP_TITLE} — Semestre 2026-2
-                    </div>
-                    <div className="text-sm font-bold text-slate-900 mt-0.5">
-                      {targetType.toUpperCase()}: {selectedEntity}
-                    </div>
-                  </div>
-                  <div className="text-right text-[9px] text-slate-500">
-                    <div><strong>Emisión:</strong> {new Date().toLocaleDateString('es-MX')}</div>
-                    <div><strong>Estado:</strong> Horario Oficial Consolidado</div>
-                  </div>
+          </div>
+
+          {/* ================= RIGHT PANEL: LIVE 1:1 PAPER DOCUMENT PREVIEW ================= */}
+          <div className={`flex-1 bg-slate-950 flex flex-col overflow-hidden ${
+            mobileTab === 'options' ? 'hidden sm:flex' : 'flex'
+          }`}>
+            
+            {/* Live Preview Toolbar */}
+            <div className="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="font-bold text-slate-200">Vista Previa en Vivo</span>
+                <span className="text-cyan-400 text-[11px] font-semibold bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-800/60">
+                  {printOptions.paperOrientation === 'landscape' ? 'Hoja Horizontal (Landscape)' : 'Hoja Vertical (Portrait)'}
+                </span>
+              </div>
+
+              {/* Toolbar Actions: Open clean tab & Zoom Controls */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleTriggerPrint}
+                  className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 text-[11px] font-semibold transition-colors cursor-pointer"
+                  title="Abrir en pestaña completa e invocar impresión de tu computadora"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Pestaña Completa</span>
+                </button>
+
+                <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel(prev => Math.max(0.45, prev - 0.1))}
+                    className="p-1 hover:text-cyan-400 text-slate-400 transition-colors cursor-pointer"
+                    title="Reducir zoom"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="font-mono text-slate-300 w-10 text-center">
+                    {Math.round(zoomLevel * 100)}%
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel(prev => Math.min(1.3, prev + 0.1))}
+                    className="p-1 hover:text-cyan-400 text-slate-400 transition-colors cursor-pointer"
+                    title="Aumentar zoom"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel(0.85)}
+                    className="p-1 hover:text-cyan-400 text-slate-400 ml-1 border-l border-slate-800 pl-1.5 cursor-pointer"
+                    title="Restablecer zoom"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </button>
                 </div>
-
-                {/* Stats in Preview */}
-                {printOptions.showStats && (
-                  <div className="mb-3 px-3 py-1 bg-slate-100 border border-slate-300 rounded flex items-center justify-between text-[10px]">
-                    <span><strong>Carga Total:</strong> {stats.totalHours} ({stats.sessionsCount} sesiones)</span>
-                    <span><strong>Asignaturas:</strong> {stats.subjectsCount} • <strong>Grupos:</strong> {stats.groupsCount} • <strong>Aulas:</strong> {stats.roomsCount}</span>
-                  </div>
-                )}
-
-                {/* Grid Preview */}
-                {(printOptions.layout === 'matrix' || printOptions.layout === 'full') && (
-                  <div className="border border-slate-400 rounded overflow-hidden mb-3">
-                    <table className="w-full border-collapse text-[9px] table-fixed">
-                      <thead>
-                        <tr className="bg-slate-200 text-slate-900 font-bold border-b border-slate-400">
-                          <th className="p-1 w-12 text-center border-r border-slate-300">Hora</th>
-                          {DAYS.map(d => (
-                            <th key={d} className="p-1 text-center border-r border-slate-300 last:border-r-0">{d}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00'].map((h, i) => (
-                          <tr key={h} className="border-b border-slate-200">
-                            <td className="p-1 text-center font-mono bg-slate-50 text-[8.5px] border-r border-slate-300 font-bold">{h}</td>
-                            {DAYS.map(d => {
-                              const match = printableSessions.find(s => s.dia === d && s.horaInicio.startsWith(h.slice(0, 2)));
-                              return (
-                                <td key={d} className="p-0.5 border-r border-slate-200 last:border-r-0 h-6 align-top">
-                                  {match && (
-                                    <div className="p-0.5 rounded bg-cyan-50 border border-cyan-300 text-[8px] leading-tight">
-                                      <div className="font-bold truncate text-cyan-950">{match.asignatura}</div>
-                                      <div className="text-[7.5px] text-cyan-800">{match.aula} (G.{match.grupo})</div>
-                                    </div>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* Signatures Preview */}
-                {printOptions.showSignatures && (
-                  <div className="mt-4 pt-2 border-t border-slate-200">
-                    <div className="grid grid-cols-3 gap-4 text-center text-[9px]">
-                      <div className="border-t border-slate-700 pt-1">
-                        <div className="font-bold">{printOptions.signerTeacher}</div>
-                        <div className="text-slate-400 text-[8px]">Docente Titular</div>
-                      </div>
-                      <div className="border-t border-slate-700 pt-1">
-                        <div className="font-bold">{printOptions.signerCoord}</div>
-                        <div className="text-slate-400 text-[8px]">Coordinación Académica</div>
-                      </div>
-                      <div className="border-t border-slate-700 pt-1">
-                        <div className="font-bold">{printOptions.signerDirector}</div>
-                        <div className="text-slate-400 text-[8px]">Dirección FCM</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
               </div>
             </div>
-          )}
+
+            {/* Document Paper Container */}
+            <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center items-start bg-slate-950/90">
+              
+              <div 
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  transformOrigin: 'top center',
+                  transition: 'transform 0.15s ease-out'
+                }}
+                className="w-full flex justify-center"
+              >
+                {/* Real Live Render of PrintSchedule with isPreview=true */}
+                <PrintSchedule
+                  ref={previewSheetRef}
+                  viewTitle={viewTitleText}
+                  sessions={printableSessions}
+                  lastLoadedAt={lastLoadedAt}
+                  printOptions={printOptions}
+                  isPreview={true}
+                />
+              </div>
+
+            </div>
+
+            {/* Feedback notification toast */}
+            {successMessage && (
+              <div className="bg-emerald-600 text-white px-4 py-2 text-center text-xs font-bold flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2 shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{successMessage}</span>
+              </div>
+            )}
+
+          </div>
 
         </div>
 
-        {/* Modal Footer with Action Buttons */}
-        <div className="bg-slate-100 px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        {/* Modal Footer: Bulletproof Action Buttons */}
+        <div className="bg-slate-950 px-4 sm:px-6 py-3.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
           
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {/* Export CSV / Excel button */}
+          {/* Secondary formats: Excel, Image, Copy */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleExportCSV}
               title="Descargar este horario en formato CSV para Excel"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-all cursor-pointer"
             >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Exportar a Excel (CSV)</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Excel (CSV)</span>
             </button>
 
-            {/* Copy summary button */}
+            <button
+              type="button"
+              onClick={handleDownloadImage}
+              disabled={isExportingImage}
+              title="Descargar horario como imagen PNG de alta resolución"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isExportingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" /> : <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />}
+              <span className="hidden sm:inline">Imagen (PNG)</span>
+            </button>
+
             <button
               type="button"
               onClick={handleCopySummary}
               title="Copiar texto resumen al portapapeles"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-all cursor-pointer"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-500" />}
-              <span>{copied ? '¡Copiado!' : 'Copiar'}</span>
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+              <span className="hidden sm:inline">{copied ? '¡Copiado!' : 'Copiar'}</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          {/* Primary Action Buttons: Real Laptop Print & Direct PDF Download */}
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors cursor-pointer"
             >
-              Cancelar
+              Cerrar
             </button>
 
+            {/* REAL LAPTOP PRINT BUTTON (HP, EPSON, CANON, SYSTEM PDF) */}
             <button
               type="button"
-              onClick={handlePrintClick}
-              id="btn-confirm-print"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-600/30 active:scale-95 transition-all cursor-pointer"
+              onClick={handleTriggerPrint}
+              disabled={isPrinting}
+              id="btn-print-native"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-600 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              title="Abre directamente el cuadro de impresión de tu computadora (Windows / Mac / Linux) o Guardar como PDF del sistema"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir / Guardar PDF</span>
+              {isPrinting ? <Loader2 className="w-4 h-4 animate-spin text-cyan-400" /> : <Printer className="w-4 h-4 text-cyan-400" />}
+              <span>Imprimir en mi Laptop</span>
+            </button>
+
+            {/* DIRECT PDF DOWNLOAD (INSTANT ONE-CLICK GENERATION) */}
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              disabled={isExportingPDF}
+              id="btn-download-pdf-direct"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              title="Descargar el archivo .pdf directo a tu carpeta de descargas"
+            >
+              {isExportingPDF ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Generando PDF...</span>
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4" />
+                  <span>Descargar PDF</span>
+                </>
+              )}
             </button>
           </div>
 

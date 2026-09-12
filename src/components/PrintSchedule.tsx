@@ -4,12 +4,13 @@ import { CONFIG } from '../config';
 import { isActivityOrResearchSession, formatDurationHours } from '../utils/normalizer';
 import { getSubjectColorScheme } from '../utils/colors';
 
-interface PrintScheduleProps {
+export interface PrintScheduleProps {
   viewTitle: string;
   viewSubtitle?: string;
   sessions: ScheduleSession[];
   lastLoadedAt: Date;
   printOptions?: PrintOptions;
+  isPreview?: boolean;
 }
 
 const DAYS = CONFIG.CALENDAR.DAYS;
@@ -18,13 +19,14 @@ const HOURS = Array.from({ length: 15 }, (_, i) => {
   return `${h.toString().padStart(2, '0')}:00`;
 });
 
-export const PrintSchedule: React.FC<PrintScheduleProps> = ({
+export const PrintSchedule = React.forwardRef<HTMLDivElement, PrintScheduleProps>(({
   viewTitle,
   viewSubtitle,
   sessions,
   lastLoadedAt,
-  printOptions = DEFAULT_PRINT_OPTIONS
-}) => {
+  printOptions = DEFAULT_PRINT_OPTIONS,
+  isPreview = false
+}, ref) => {
   const now = new Date();
   const printTimestamp = now.toLocaleString('es-MX', {
     dateStyle: 'medium',
@@ -125,8 +127,20 @@ export const PrintSchedule: React.FC<PrintScheduleProps> = ({
     large: 'text-[12px]'
   }[printOptions.fontSize] || 'text-[10.5px]';
 
+  const isLandscape = printOptions.paperOrientation !== 'portrait';
+  const orientationWidthClass = isLandscape ? 'max-w-5xl' : 'max-w-3xl';
+
+  const containerClasses = isPreview
+    ? `bg-white text-slate-900 p-6 sm:p-8 font-sans shadow-2xl border border-slate-300 rounded-2xl w-full ${orientationWidthClass} mx-auto transition-all ${fontSizeClass}`
+    : `hidden print:block print-only print-container bg-white text-black p-4 font-sans ${fontSizeClass}`;
+
   return (
-    <div className={`hidden print:block print-container bg-white text-black p-4 font-sans ${fontSizeClass}`}>
+    <div
+      ref={ref}
+      id={isPreview ? 'print-schedule-preview' : 'print-schedule-container'}
+      data-print-sheet="true"
+      className={containerClasses}
+    >
       
       {/* Header for print */}
       <div className="border-b-2 border-slate-900 pb-2.5 mb-3 flex items-start justify-between">
@@ -342,4 +356,6 @@ export const PrintSchedule: React.FC<PrintScheduleProps> = ({
 
     </div>
   );
-};
+});
+
+PrintSchedule.displayName = 'PrintSchedule';
