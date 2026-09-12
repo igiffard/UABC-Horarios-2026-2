@@ -142,6 +142,8 @@ export interface CorrectionRecord {
   motivo: string;
   accionPendiente: string;
   observaciones: string;
+  inscritos?: number | null;
+  cupoGrupo?: number | null;
 }
 
 export interface ConsolidatedData {

@@ -186,8 +186,10 @@ export function applyCorrections(
       if (timeActual) {
         const sStart = timeToMinutes(timeActual.start);
         const sEnd = timeToMinutes(timeActual.end);
-        // Solapamiento o coincidencia cercana
-        matchTime = s.startMinutes < sEnd + 15 && s.endMinutes > sStart - 15;
+        // Solapamiento real de intervalos (al menos 20 min de cruce o inicio concordante)
+        const overlapStart = Math.max(s.startMinutes, sStart);
+        const overlapEnd = Math.min(s.endMinutes, sEnd);
+        matchTime = (overlapEnd - overlapStart) >= 20 || Math.abs(s.startMinutes - sStart) <= 15;
       }
 
       let matchRoom = true;
@@ -195,11 +197,11 @@ export function applyCorrections(
         matchRoom = s.aula === roomActual || (s.aulaOriginal && s.aulaOriginal.includes(corr.salonActual));
       }
 
-      // Si tenemos profesor y asignatura coincidentes, y día/horario/tipo concuerdan
+      // Si tenemos profesor y asignatura coincidentes, y día/horario/salón/tipo concuerdan
       if (matchProf && matchAsig && matchTipo && (profKey || asigKey)) {
-        if (diaActual && matchDay && matchTime) {
+        if (diaActual && matchDay && matchTime && matchRoom) {
           matchedIndices.push(i);
-        } else if (!diaActual && (matchRoom || matchTime || matchGrp)) {
+        } else if (!diaActual && matchRoom && (matchTime || matchGrp)) {
           matchedIndices.push(i);
         }
       }
@@ -264,6 +266,8 @@ export function applyCorrections(
         const updatedRoom = (roomNuevo && roomNuevo !== 'Sin Aula Asignada') ? roomNuevo : orig.aula;
         const roomDetails = getClassroomDetails(updatedRoom);
         const updatedEdificio = (roomDetails && roomDetails.buildingNumber) ? roomDetails.buildingNumber : orig.edificio;
+        const updatedInscritos = corr.inscritos !== undefined && corr.inscritos !== null ? corr.inscritos : orig.inscritos;
+        const updatedCupo = corr.cupoGrupo !== undefined && corr.cupoGrupo !== null ? corr.cupoGrupo : (orig.cupoGrupo ?? updatedInscritos);
 
         sessions[idx] = {
           ...orig,
@@ -277,6 +281,8 @@ export function applyCorrections(
           aula: updatedRoom,
           aulaOriginal: corr.salonSolicitadoNuevo || orig.aulaOriginal,
           edificio: updatedEdificio,
+          inscritos: updatedInscritos,
+          cupoGrupo: updatedCupo,
           isCorrection: true,
           correctionId: corr.id,
           correctionNote: corr.observaciones || `${corr.tipoAjuste}: ${corr.estadoAjuste}`
@@ -288,6 +294,8 @@ export function applyCorrections(
       const startMinutes = timeToMinutes(timeNuevo.start);
       const endMinutes = timeToMinutes(timeNuevo.end);
       const roomDetails = roomNuevo ? getClassroomDetails(roomNuevo) : undefined;
+      const inscritosNum = corr.inscritos !== undefined && corr.inscritos !== null ? corr.inscritos : null;
+      const cupoNum = corr.cupoGrupo !== undefined && corr.cupoGrupo !== null ? corr.cupoGrupo : inscritosNum;
       sessions.push({
         id: `Corr_${corr.id}`,
         source: 'Corrección',
@@ -301,8 +309,13 @@ export function applyCorrections(
         aula: roomNuevo || 'Sin Aula Asignada',
         aulaOriginal: corr.salonSolicitadoNuevo,
         edificio: (roomDetails && roomDetails.buildingNumber) ? roomDetails.buildingNumber : '',
-        capacidad: null,
-        programa: '',
+        capacidad: inscritosNum,
+        cupoGrupo: cupoNum,
+        inscritos: inscritosNum,
+        cargaInscritos: inscritosNum,
+        evalInscritos: 0,
+        subastaInscritos: 0,
+        programa: 'Tronco Común / Asesorías FCM',
         dia: diaNuevo,
         diaIndex: getDayIndex(diaNuevo),
         horaInicio: timeNuevo.start,

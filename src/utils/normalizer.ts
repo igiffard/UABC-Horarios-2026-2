@@ -102,7 +102,9 @@ export function normalizeClassroom(rawRoom: string | undefined | null): string {
   if (upper.includes('AM1')) return 'AM1';
   if (upper.includes('AM2')) return 'AM2';
   if (upper.includes('TOTOABA') || upper.includes('TOB')) return s.includes('B') ? 'TOB' : 'Totoaba A';
-  if (upper.includes('SALA DE ASESOR') || (upper.includes('SA') && upper.includes('E14'))) return 'SA';
+  if (upper === 'SA' || upper.includes('SALA DE ASESOR') || (upper.includes('SA') && upper.includes('E14'))) return 'SA';
+  if (upper === 'SC' || upper.includes('SALA DE CONSEJO') || upper.includes('CONSEJO')) return 'SC';
+  if (upper === 'SFE' || upper.includes('FÍSICA EXPERIMENTAL') || upper.includes('FISICA EXPERIMENTAL')) return 'SFE';
   if (upper === 'SB' || upper.includes('SALA DE BIOLOG') || upper.includes('SALA DE BIOLOGÍA')) return 'SB';
   if (upper.includes('GIMNASIO')) return 'Gimnasio';
   if (upper.includes('DIB-E') || upper.includes('DIB')) return 'DIB-E';
