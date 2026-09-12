@@ -33,13 +33,7 @@ jobs:
       - name: Instalar dependencias
         run: npm ci || npm install
 
-      - name: Configurar GitHub Pages
-        id: pages
-        uses: actions/configure-pages@v4
-
       - name: Construir proyecto
-        env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: npm run build
 
       - name: Preparar soporte SPA y NoJekyll para GitHub Pages

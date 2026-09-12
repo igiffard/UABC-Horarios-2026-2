@@ -28,18 +28,33 @@ git push -u origin main
 
 ---
 
-### 2. Publicación Automática con GitHub Actions (GitHub Pages)
+### 2. ¿Por qué la página se ve en blanco en GitHub y cómo solucionarlo?
 
-El proyecto ya incluye el flujo de trabajo automatizado en `.github/workflows/deploy.yml`. Solo necesitas habilitar GitHub Pages en tu repositorio:
+Una página en blanco en GitHub Pages ocurre por una de dos razones muy comunes:
 
-1. Ve a tu repositorio en GitHub: `https://github.com/TU-USUARIO/TU-REPOSITORIO`.
-2. Haz clic en la pestaña **Settings** (Configuración) > sección lateral **Pages**.
-3. En **Build and deployment** > **Source**, selecciona:
-   - **GitHub Actions** (¡no selecciones "Deploy from a branch"!).
-4. En cuanto hagas un `push` a la rama `main`, la acción compilará el proyecto automáticamente y lo publicará en:
-   ```
-   https://TU-USUARIO.github.io/TU-REPOSITORIO/
-   ```
+#### Causa Principal: GitHub Pages está configurado para servir la raíz `/` en vez de los archivos compilados
+Por defecto, GitHub Pages intenta servir la carpeta raíz (`/`), la cual contiene el código fuente sin compilar (`index.html` apuntando a `src/main.tsx`). Como los navegadores no pueden ejecutar TypeScript directamente, la pantalla queda en blanco.
+
+Tienes **dos soluciones infalibles** (elige la que prefieras):
+
+#### Opción 1: Publicación instantánea mediante la carpeta `/docs` (¡La más rápida!)
+El proyecto ya genera automáticamente los archivos de producción compilados dentro de la carpeta `/docs`:
+1. En tu repositorio de GitHub, entra a **Settings** (Configuración) > menú lateral **Pages**.
+2. En **Build and deployment**:
+   - **Source**: `Deploy from a branch`
+   - **Branch**: `main` (o tu rama principal)
+   - **Folder**: Selecciona `/docs` *(¡NO selecciones `/ (root)`!)*
+3. Haz clic en **Save**.
+4. En 1 o 2 minutos, tu sitio estará en línea funcionando sin pantalla blanca.
+
+#### Opción 2: Publicación automática mediante GitHub Actions
+Si prefieres que GitHub compile automáticamente cada cambio:
+1. En tu repositorio de GitHub, entra a **Settings** > **Pages**.
+2. En **Build and deployment** > **Source**, cambia el selector de `Deploy from a branch` a **GitHub Actions**.
+3. Ve a la pestaña **Actions** de tu repositorio y verifica que el flujo *Desplegar a GitHub Pages* esté completado en verde.
+4. En **Settings** > **Actions** > **General** > **Workflow permissions**, asegúrate de que esté marcado **Read and write permissions**.
+
+> **Nota sobre la URL**: Asegúrate de abrir la URL con la barra inclinada al final, por ejemplo: `https://TU-USUARIO.github.io/TU-REPOSITORIO/`. El proyecto ya incluye una redirección automática para asegurar que todos los estilos y scripts relativos carguen sin errores 404.
 
 ---
 
