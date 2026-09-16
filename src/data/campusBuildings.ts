@@ -42,9 +42,9 @@ export const ROOM_CATALOG: Record<string, CampusRoomInfo> = {
 
   // E-14
   'SC': { code: 'SC', name: 'Sala de Consejo', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Administrativo / Apoyo' },
-  'SA': { code: 'SA', name: 'Salón de Asesorías', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'SA': { code: 'SA', name: 'Salón de Asesorías / CPA (SA)', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'CPA': { code: 'SA', name: 'Salón de Asesorías / CPA (SA)', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Aula / Salón' },
   'CPB': { code: 'CPB', name: 'Centro de Cómputo de Posgrado, Sala B', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Centro de Cómputo' },
-  'CPA': { code: 'CPA', name: 'Centro de Cómputo de Posgrado, Sala A', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Centro de Cómputo' },
   'CCL': { code: 'CCL', name: 'Centro de Cómputo de Licenciatura', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Centro de Cómputo' },
   'SPD': { code: 'SPD', name: 'Sala de Procesamiento de Datos Oceanográficos', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Centro de Cómputo' },
   'DOM': { code: 'DOM', name: 'Domo Central FCM', buildingId: 'E-14', buildingName: 'Edificio 14 (Dirección FCM)', buildingNumber: '14', floor: 'Planta Baja', type: 'Aula / Salón' },
@@ -117,6 +117,9 @@ export const ROOM_CATALOG: Record<string, CampusRoomInfo> = {
   'SP2': { code: 'SP2', name: 'Salón de Posgrado 2 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
   'P2': { code: 'P2', name: 'Salón de Posgrado 2 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
   'P3': { code: 'P3', name: 'Salón de Posgrado 3 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'SP3': { code: 'P3', name: 'Salón de Posgrado 3 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'Salón 3 Posgrado IIO': { code: 'P3', name: 'Salón de Posgrado 3 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'Salón 3 de posgrado del IIO': { code: 'P3', name: 'Salón de Posgrado 3 (IIO)', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
   'SPI': { code: 'SPI', name: 'Sala de Posgrado IIO', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
   'IIO': { code: 'IIO', name: 'Auditorio / Espacio IIO', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
 
@@ -164,19 +167,18 @@ export const CAMPUS_BUILDINGS: CampusBuildingInfo[] = [
     number: '14',
     name: 'Edificio 14 (Dirección)',
     title: 'Edificio 14 — Dirección y Cómputo FCM',
-    description: 'Dirección de la FCM, Sala de Consejo, Salón de Asesorías, Domo y Centros de Cómputo de Licenciatura y Posgrado (CCL, CPB, CPA, SPD).',
+    description: 'Dirección de la FCM, Sala de Consejo, Salón de Asesorías / CPA (SA), Domo y Centros de Cómputo (CCL, CPB, SPD).',
     color: '#dc2626', // Red
     badgeBg: 'bg-red-50 border-red-200 text-red-800',
     badgeText: 'text-red-700',
-    rooms: ['SC', 'SA', 'CPB', 'CCL', 'SPD', 'CPA', 'P5', 'DOM'],
+    rooms: ['SC', 'SA', 'CPB', 'CCL', 'SPD', 'P5', 'DOM'],
     floors: {
       plantaBaja: [
         { code: 'SC', name: 'Sala de Consejo' },
-        { code: 'SA', name: 'Salón de Asesorías' },
+        { code: 'SA', name: 'Salón de Asesorías / CPA (SA)' },
         { code: 'CPB', name: 'Centro de Cómputo de Posgrado, Sala B' },
         { code: 'CCL', name: 'Centro de Cómputo de Licenciatura' },
         { code: 'SPD', name: 'Sala de Procesamiento de Datos Oceanográficos' },
-        { code: 'CPA', name: 'Centro de Cómputo de Posgrado, Sala A' },
         { code: 'DOM', name: 'Domo Central FCM' },
         { code: 'P5', name: 'Salón de Posgrado 5' }
       ]

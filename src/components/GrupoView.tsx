@@ -10,7 +10,7 @@ interface GrupoViewProps {
   groups: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
-  onOpenPrintModal?: (targetType?: 'grupo', targetName?: string) => void;
+  onOpenPrintModal?: (targetType?: 'grupo', targetName?: string, initialScope?: 'current' | 'batch' | 'master_matrix') => void;
   selectedEntity?: string;
 }
 
@@ -201,15 +201,27 @@ export const GrupoView: React.FC<GrupoViewProps> = ({
               )}
 
               {onOpenPrintModal && (
-                <button
-                  type="button"
-                  onClick={() => onOpenPrintModal('grupo', selectedGroup)}
-                  title="Imprimir u obtener PDF del horario de este grupo"
-                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimir Grupo</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onOpenPrintModal('grupo', selectedGroup, 'current')}
+                    title="Imprimir u obtener PDF del horario de este grupo"
+                    className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Imprimir Grupo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenPrintModal('grupo', undefined, 'batch')}
+                    title="Imprimir todos los grupos al mismo tiempo en lote"
+                    className="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Layers className="w-4 h-4 text-cyan-400" />
+                    <span>Todos los Grupos</span>
+                  </button>
+                </div>
               )}
 
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   X,
   Printer,
@@ -24,15 +24,17 @@ import {
   Loader2,
   CheckCircle2,
   Layers,
-  Palette,
-  ExternalLink,
-  Smartphone
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  ExternalLink
 } from 'lucide-react';
-import { ScheduleSession, PrintOptions, ViewTab } from '../types';
+import { ScheduleSession, PrintOptions, DayName } from '../types';
 import { exportSessionsToCSV } from '../utils/exporter';
 import { isActivityOrResearchSession, formatDurationHours } from '../utils/normalizer';
 import { exportElementToPDF, exportElementToImage, printWithNativeDialog } from '../utils/pdfExport';
 import { PrintSchedule } from './PrintSchedule';
+import { MasterMatrixPrint } from './MasterMatrixPrint';
 import { CONFIG } from '../config';
 
 interface PrintModalProps {
@@ -43,13 +45,17 @@ interface PrintModalProps {
   allClassrooms: string[];
   allGroups: string[];
   allSubjects: string[];
-  activeTab: ViewTab;
+  activeTab?: string;
   currentEntityName?: string;
-  lastLoadedAt: Date;
+  lastLoadedAt: Date | null;
   printOptions: PrintOptions;
   onChangePrintOptions: (options: PrintOptions) => void;
   onExecutePrint: () => void;
 }
+
+const MAIN_ROOMS_NAMES = [
+  'S1', 'S2', 'S3', 'S5', 'S6', 'S7', 'S8', 'SA', 'SB', 'SC', 'SG', 'SGP', 'CCL', 'CAI', 'AM', 'AM1', 'AM2', 'ESP', 'PT', 'AF1', 'AF2', 'AF3'
+];
 
 export const PrintModal: React.FC<PrintModalProps> = ({
   isOpen,
@@ -63,11 +69,14 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   currentEntityName,
   lastLoadedAt,
   printOptions,
-  onChangePrintOptions,
-  onExecutePrint
+  onChangePrintOptions
 }) => {
-  // Target entity for print
-  const initialType: 'profesor' | 'aula' | 'grupo' | 'asignatura' = 
+  // Print Scope: 'current' (single entity), 'batch' (booklet of all entities), 'master_matrix' (all rooms on 1 single sheet)
+  const [printScope, setPrintScope] = useState<'current' | 'batch' | 'master_matrix'>(() => {
+    return printOptions.scope || 'current';
+  });
+
+  const initialType: 'profesor' | 'aula' | 'grupo' | 'asignatura' =
     printOptions.targetType || (activeTab === 'disponibilidad' ? 'profesor' : (activeTab as any) || 'profesor');
 
   const [targetType, setTargetType] = useState<'profesor' | 'aula' | 'grupo' | 'asignatura'>(initialType);
@@ -81,19 +90,86 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     return allProfessors[0] || '';
   });
 
+  // Batch & Matrix Specific States
+  const [matrixDay, setMatrixDay] = useState<DayName>('Lunes');
+  const [batchFilterMode, setBatchFilterMode] = useState<'active' | 'main' | 'all'>('active');
+  const [batchSearchQuery, setBatchSearchQuery] = useState('');
+  const [batchPreviewIndex, setBatchPreviewIndex] = useState<number>(0);
+  const [selectedBatchEntities, setSelectedBatchEntities] = useState<string[]>([]);
+
+  // General controls
   const [searchFilter, setSearchFilter] = useState('');
-  const [zoomLevel, setZoomLevel] = useState<number>(0.85); // 85% scale fits comfortably
+  const [zoomLevel, setZoomLevel] = useState<number>(0.85);
   const [copied, setCopied] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingImage, setIsExportingImage] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Mobile tab toggle (on desktop, both panels are shown side-by-side)
+  // Mobile tab toggle
   const [mobileTab, setMobileTab] = useState<'options' | 'preview'>('preview');
 
-  // Ref to the live preview sheet for captures
+  // DOM Refs
   const previewSheetRef = useRef<HTMLDivElement>(null);
+  const masterMatrixRef = useRef<HTMLDivElement>(null);
+  const batchHiddenContainerRef = useRef<HTMLDivElement>(null);
+
+  // Filtered entity sets with classes assigned
+  const activeRooms = useMemo(() => {
+    const rooms = sessions
+      .map(s => s.aula)
+      .filter((a): a is string => Boolean(a && a !== 'Sin Aula Asignada'));
+    return Array.from(new Set<string>(rooms)).sort((a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  }, [sessions]);
+
+  const mainRooms = useMemo(() => {
+    return MAIN_ROOMS_NAMES.filter(r => allClassrooms.includes(r));
+  }, [allClassrooms]);
+
+  const activeProfessors = useMemo(() => {
+    const profs = sessions
+      .map(s => s.profesor)
+      .filter((p): p is string => Boolean(p));
+    return Array.from(new Set<string>(profs)).sort((a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  }, [sessions]);
+
+  const activeGroups = useMemo(() => {
+    const grps = sessions
+      .map(s => s.grupo)
+      .filter((g): g is string => Boolean(g && g !== '-'));
+    return Array.from(new Set<string>(grps)).sort((a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  }, [sessions]);
+
+  // Available list for batch selection
+  const currentBatchUniverse = useMemo(() => {
+    if (targetType === 'aula') {
+      if (batchFilterMode === 'main') return mainRooms;
+      if (batchFilterMode === 'active') return activeRooms;
+      return allClassrooms;
+    }
+    if (targetType === 'grupo') {
+      if (batchFilterMode === 'active') return activeGroups;
+      return allGroups;
+    }
+    if (targetType === 'profesor') {
+      if (batchFilterMode === 'active') return activeProfessors;
+      return allProfessors;
+    }
+    return allSubjects;
+  }, [targetType, batchFilterMode, mainRooms, activeRooms, allClassrooms, activeGroups, allGroups, activeProfessors, allProfessors, allSubjects]);
+
+  // Sync batch selection when targetType or filter mode changes
+  useEffect(() => {
+    setSelectedBatchEntities(currentBatchUniverse);
+    setBatchPreviewIndex(0);
+  }, [currentBatchUniverse]);
+
+  // Keep preview index in bounds
+  useEffect(() => {
+    if (batchPreviewIndex >= selectedBatchEntities.length) {
+      setBatchPreviewIndex(Math.max(0, selectedBatchEntities.length - 1));
+    }
+  }, [selectedBatchEntities.length, batchPreviewIndex]);
 
   // When targetType changes, reset search and pick first item
   const handleTargetTypeChange = (type: 'profesor' | 'aula' | 'grupo' | 'asignatura') => {
@@ -106,7 +182,6 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     else if (type === 'asignatura') defaultItem = allSubjects[0] || '';
     setSelectedEntity(defaultItem);
 
-    // Sync to printOptions
     onChangePrintOptions({
       ...printOptions,
       targetType: type,
@@ -125,7 +200,17 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     });
   };
 
-  // Filter list of available entities based on search box
+  // Toggle entity in batch selection
+  const toggleBatchEntity = (name: string) => {
+    setSelectedBatchEntities(prev =>
+      prev.includes(name) ? prev.filter(e => e !== name) : [...prev, name]
+    );
+  };
+
+  const selectAllBatch = () => setSelectedBatchEntities(currentBatchUniverse);
+  const clearAllBatch = () => setSelectedBatchEntities([]);
+
+  // Filter list of available entities based on search box (single mode)
   const availableEntities = useMemo(() => {
     let list: string[] = [];
     if (targetType === 'profesor') list = allProfessors;
@@ -138,22 +223,26 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     return list.filter(item => item.toLowerCase().includes(q));
   }, [targetType, allProfessors, allClassrooms, allGroups, allSubjects, searchFilter]);
 
-  // Filtered sessions for the selected target
+  // Current entity for batch preview
+  const currentBatchEntity = selectedBatchEntities[batchPreviewIndex] || selectedBatchEntities[0] || '';
+
+  // Filtered sessions for the selected target (Single mode)
   const targetSessions = useMemo(() => {
-    if (!selectedEntity) return [];
+    const activeName = printScope === 'batch' ? currentBatchEntity : selectedEntity;
+    if (!activeName) return [];
     switch (targetType) {
       case 'profesor':
-        return sessions.filter(s => s.profesor === selectedEntity);
+        return sessions.filter(s => s.profesor === activeName);
       case 'aula':
-        return sessions.filter(s => s.aula === selectedEntity);
+        return sessions.filter(s => s.aula === activeName);
       case 'grupo':
-        return sessions.filter(s => s.grupo === selectedEntity);
+        return sessions.filter(s => s.grupo === activeName);
       case 'asignatura':
-        return sessions.filter(s => s.asignatura === selectedEntity);
+        return sessions.filter(s => s.asignatura === activeName);
       default:
         return [];
     }
-  }, [sessions, targetType, selectedEntity]);
+  }, [sessions, targetType, selectedEntity, printScope, currentBatchEntity]);
 
   // Filtered sessions factoring in printOptions.showActivities
   const printableSessions = useMemo(() => {
@@ -196,6 +285,12 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   };
 
   const getCleanDocTitle = () => {
+    if (printScope === 'master_matrix') {
+      return `Sabana_General_FCM_${targetType.toUpperCase()}_${matrixDay}`.replace(/\s+/g, '_');
+    }
+    if (printScope === 'batch') {
+      return `Cuadernillo_FCM_${targetType.toUpperCase()}S_2026-2`.replace(/\s+/g, '_');
+    }
     const typeLabel = {
       profesor: 'Docente',
       aula: 'Aula',
@@ -206,27 +301,54 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   };
 
   const viewTitleText = useMemo(() => {
+    const activeName = printScope === 'batch' ? currentBatchEntity : selectedEntity;
     const typeLabel = {
       profesor: 'Docente Titular',
       aula: 'Aula / Laboratorio',
       grupo: 'Grupo Estudiantil',
       asignatura: 'Asignatura'
     }[targetType];
-    return `${typeLabel.toUpperCase()}: ${selectedEntity}`;
-  }, [targetType, selectedEntity]);
+    return `${typeLabel.toUpperCase()}: ${activeName}`;
+  }, [targetType, selectedEntity, printScope, currentBatchEntity]);
 
-  // 1. Direct PDF Download with safety timeout
+  // 1. Direct PDF Download with safety
   const handleDownloadPDF = async () => {
-    if (!previewSheetRef.current) return;
     setIsExportingPDF(true);
     setSuccessMessage(null);
     try {
+      if (printScope === 'master_matrix') {
+        if (!masterMatrixRef.current) return;
+        const filename = `${getCleanDocTitle()}_2026-2.pdf`;
+        await exportElementToPDF(masterMatrixRef.current, {
+          filename,
+          orientation: 'landscape',
+          paperSize: 'letter',
+          quality: 0.95,
+          fitToSinglePage: true
+        });
+        setSuccessMessage('¡Sábana en PDF descargada con éxito (1 sola hoja)!');
+        setTimeout(() => setSuccessMessage(null), 3500);
+        return;
+      }
+
+      if (printScope === 'batch') {
+        // For large batches (e.g. >10 pages), native print dialog with 'Guardar como PDF' produces instant vector crispness
+        setSuccessMessage(`Abriendo diálogo de impresión para exportar ${selectedBatchEntities.length} páginas en PDF...`);
+        setTimeout(() => {
+          handleTriggerPrint();
+        }, 300);
+        return;
+      }
+
+      // Single mode
+      if (!previewSheetRef.current) return;
       const filename = `${getCleanDocTitle()}_2026-2.pdf`;
       await exportElementToPDF(previewSheetRef.current, {
         filename,
         orientation: printOptions.paperOrientation || 'landscape',
         paperSize: 'letter',
-        quality: 0.95
+        quality: 0.95,
+        fitToSinglePage: printOptions.fitToSinglePage !== false
       });
       setSuccessMessage('¡PDF descargado con éxito!');
       setTimeout(() => setSuccessMessage(null), 3500);
@@ -241,13 +363,14 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
   // 2. Direct PNG Image Download
   const handleDownloadImage = async () => {
-    if (!previewSheetRef.current) return;
+    const targetEl = printScope === 'master_matrix' ? masterMatrixRef.current : previewSheetRef.current;
+    if (!targetEl) return;
     setIsExportingImage(true);
     setSuccessMessage(null);
     try {
       const filename = `${getCleanDocTitle()}_2026-2.png`;
       await exportElementToImage(
-        previewSheetRef.current,
+        targetEl,
         filename,
         printOptions.paperOrientation || 'landscape'
       );
@@ -264,22 +387,42 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
   // 3. Connect to Laptop's Real Native Print Dialog
   const handleTriggerPrint = async () => {
-    if (!previewSheetRef.current) return;
     setIsPrinting(true);
     setSuccessMessage(null);
     try {
-      // Sync options to parent state
-      onChangePrintOptions({
-        ...printOptions,
-        targetType,
-        targetName: selectedEntity
-      });
-
-      await printWithNativeDialog(
-        previewSheetRef.current.innerHTML,
-        getCleanDocTitle(),
-        printOptions.paperOrientation || 'landscape'
-      );
+      if (printScope === 'master_matrix') {
+        if (!masterMatrixRef.current) return;
+        await printWithNativeDialog(
+          masterMatrixRef.current.outerHTML,
+          getCleanDocTitle(),
+          'landscape',
+          true,
+          false
+        );
+      } else if (printScope === 'batch') {
+        if (!batchHiddenContainerRef.current) return;
+        await printWithNativeDialog(
+          batchHiddenContainerRef.current.innerHTML,
+          getCleanDocTitle(),
+          printOptions.paperOrientation || 'landscape',
+          true,
+          true
+        );
+      } else {
+        if (!previewSheetRef.current) return;
+        onChangePrintOptions({
+          ...printOptions,
+          targetType,
+          targetName: selectedEntity
+        });
+        await printWithNativeDialog(
+          previewSheetRef.current.outerHTML,
+          getCleanDocTitle(),
+          printOptions.paperOrientation || 'landscape',
+          printOptions.fitToSinglePage !== false,
+          false
+        );
+      }
     } catch (e) {
       console.warn('Print trigger fallback to window.print()', e);
       window.print();
@@ -333,7 +476,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
-                Visualiza la hoja en tiempo real, elige orientación Horizontal o Vertical y conéctate a la impresora de tu computadora.
+                Imprime horarios individuales, cuadernillos por lote (todas las aulas/profesores/grupos) o sábanas concentradas en 1 hoja.
               </p>
             </div>
           </div>
@@ -348,7 +491,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                   mobileTab === 'options' ? 'bg-cyan-600 text-white' : 'text-slate-400'
                 }`}
               >
-                Opciones
+                Ajustes
               </button>
               <button
                 type="button"
@@ -365,48 +508,94 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              title="Cerrar modal"
+              className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Cerrar modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Modal Main Content: Split Layout */}
+        {/* Modal Main Body */}
         <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
           
-          {/* ================= LEFT PANEL: CONTROLS & ORIENTATION ================= */}
+          {/* ================= LEFT PANEL: CONTROLS & SCOPE ================= */}
           <div className={`w-full sm:w-88 md:w-96 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto ${
             mobileTab === 'preview' ? 'hidden sm:flex' : 'flex'
           }`}>
             <div className="p-4 space-y-4 text-xs">
               
-              {/* STEP 1: ENTITY SELECTION */}
-              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+              {/* SCOPE SELECTOR: Individual vs. Cuadernillo Lote vs. Sábana Concentrada */}
+              <div className="bg-slate-800/90 p-3 rounded-2xl border border-slate-700/80 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">1</span>
-                    ¿Qué horario deseas imprimir?
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    {stats.sessionsCount} sesiones
+                    Modo de Impresión
                   </span>
                 </div>
 
-                {/* Target Type Selector Pills */}
-                <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px]">
+                <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px]">
                   <button
                     type="button"
-                    onClick={() => handleTargetTypeChange('profesor')}
-                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                      targetType === 'profesor' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    onClick={() => setPrintScope('current')}
+                    className={`py-1.5 px-1.5 rounded-lg font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      printScope === 'current'
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                     }`}
                   >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Docente</span>
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Individual</span>
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => setPrintScope('batch')}
+                    className={`py-1.5 px-1.5 rounded-lg font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      printScope === 'batch'
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
+                    title="Imprimir todas las aulas, profesores o grupos al mismo tiempo (1 hoja por cada una)"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Por Lote</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPrintScope('master_matrix')}
+                    className={`py-1.5 px-1.5 rounded-lg font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      printScope === 'master_matrix'
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
+                    title="Tabla concentradora de todas las aulas o grupos en 1 sola hoja de papel"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>Sábana (1 Hoja)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* STEP 2: ENTITY SELECTION & SCOPE-SPECIFIC OPTIONS */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">2</span>
+                    {printScope === 'master_matrix' ? 'Entidad y Día de la Sábana' : printScope === 'batch' ? 'Selección del Lote Masivo' : '¿Qué horario deseas imprimir?'}
+                  </span>
+                  {printScope === 'current' && (
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {stats.sessionsCount} sesiones
+                    </span>
+                  )}
+                </div>
+
+                {/* Target Type Selector Pills */}
+                <div className={`grid gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] ${
+                  printScope === 'master_matrix' ? 'grid-cols-2' : 'grid-cols-3'
+                }`}>
                   <button
                     type="button"
                     onClick={() => handleTargetTypeChange('aula')}
@@ -415,83 +604,260 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                     }`}
                   >
                     <Building2 className="w-3.5 h-3.5" />
-                    <span>Aula</span>
+                    <span>Aulas ({activeRooms.length})</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => handleTargetTypeChange('grupo')}
+                    onClick={() => handleTargetTypeChange('profesor')}
                     className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                      targetType === 'grupo' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      targetType === 'profesor' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
                     }`}
                   >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Grupo</span>
+                    <User className="w-3.5 h-3.5" />
+                    <span>Docentes ({activeProfessors.length})</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleTargetTypeChange('asignatura')}
-                    className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                      targetType === 'asignatura' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>Materia</span>
-                  </button>
+                  {printScope !== 'master_matrix' && (
+                    <button
+                      type="button"
+                      onClick={() => handleTargetTypeChange('grupo')}
+                      className={`py-1.5 px-1 rounded-lg font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                        targetType === 'grupo' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>Grupos ({activeGroups.length})</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* Search & Select Entity Dropdown */}
-                <div className="space-y-1.5">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder={`Filtrar ${targetType}...`}
-                      value={searchFilter}
-                      onChange={(e) => setSearchFilter(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
-                  </div>
+                {/* --- A. CONFIG FOR MASTER MATRIX (SÁBANA EN 1 HOJA) --- */}
+                {printScope === 'master_matrix' && (
+                  <div className="space-y-2 pt-1">
+                    <label className="block text-[11px] font-semibold text-slate-300">
+                      Día de la Semana:
+                    </label>
+                    <div className="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[10.5px]">
+                      {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'] as DayName[]).map(d => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setMatrixDay(d)}
+                          className={`py-1 rounded font-bold transition-all cursor-pointer text-center ${
+                            matrixDay === d ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          }`}
+                        >
+                          {d.slice(0, 3)}
+                        </button>
+                      ))}
+                    </div>
 
-                  <select
-                    value={selectedEntity}
-                    onChange={(e) => handleEntitySelect(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-cyan-300 focus:outline-hidden focus:ring-2 focus:ring-cyan-500 cursor-pointer max-h-36"
-                    size={availableEntities.length > 5 ? 4 : Math.max(3, availableEntities.length)}
-                  >
-                    {availableEntities.map(name => (
-                      <option key={name} value={name} className="py-1 px-2 hover:bg-cyan-900/50">
-                        {targetType === 'grupo' ? `Grupo ${name}` : name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {targetType === 'aula' && (
+                      <div className="pt-1">
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Filtrar Aulas en la Sábana:
+                        </label>
+                        <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+                          <button
+                            type="button"
+                            onClick={() => setBatchFilterMode('main')}
+                            className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
+                              batchFilterMode === 'main'
+                                ? 'bg-cyan-950 border-cyan-500 text-cyan-200 font-bold'
+                                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            Aulas Principales ({mainRooms.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBatchFilterMode('active')}
+                            className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
+                              batchFilterMode === 'active'
+                                ? 'bg-cyan-950 border-cyan-500 text-cyan-200 font-bold'
+                                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            Con Clases ({activeRooms.length})
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                {/* Selected Entity Card */}
-                <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-[11px] space-y-1">
-                  <div className="font-bold text-white truncate flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span className="truncate">{selectedEntity}</span>
+                    <div className="bg-cyan-950/40 p-2 rounded-xl border border-cyan-800/60 text-[10.5px] text-cyan-200">
+                      <strong>● Sábana Concentrada:</strong> Todas las {targetType === 'aula' ? 'aulas' : 'entidades'} caben simultáneamente en <strong>1 sola hoja física</strong> de 07:00 a 21:00 h.
+                    </div>
                   </div>
-                  <div className="text-slate-400 flex items-center justify-between text-[10px]">
-                    <span>Carga: <strong className="text-cyan-400">{stats.totalHours}</strong></span>
-                    <span>Materias: <strong className="text-slate-200">{stats.subjectsCount}</strong></span>
-                    <span>Salones: <strong className="text-slate-200">{stats.roomsCount}</strong></span>
+                )}
+
+                {/* --- B. CONFIG FOR BATCH PRINTING (CUADERNILLO POR LOTE) --- */}
+                {printScope === 'batch' && (
+                  <div className="space-y-2 pt-1">
+                    {/* Presets */}
+                    <div className="flex items-center justify-between gap-1 text-[10.5px]">
+                      {targetType === 'aula' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBatchFilterMode('active');
+                              setSelectedBatchEntities(activeRooms);
+                            }}
+                            className={`px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                              batchFilterMode === 'active' ? 'bg-cyan-950 border-cyan-500 text-cyan-200 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            Con Clases ({activeRooms.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBatchFilterMode('main');
+                              setSelectedBatchEntities(mainRooms);
+                            }}
+                            className={`px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                              batchFilterMode === 'main' ? 'bg-cyan-950 border-cyan-500 text-cyan-200 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400'
+                            }`}
+                          >
+                            Principales ({mainRooms.length})
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-slate-400 text-[10.5px]">
+                          {selectedBatchEntities.length} {targetType === 'profesor' ? 'docentes' : 'grupos'} seleccionados
+                        </span>
+                      )}
+
+                      <div className="flex items-center gap-1 ml-auto">
+                        <button
+                          type="button"
+                          onClick={selectAllBatch}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-cyan-300"
+                        >
+                          Todos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={clearAllBatch}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-400"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Batch Selection Badge */}
+                    <div className="bg-emerald-950/50 p-2.5 rounded-xl border border-emerald-600/50 text-[11px] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div>
+                          <div className="font-bold text-emerald-200">
+                            {selectedBatchEntities.length} Hojas a Imprimir
+                          </div>
+                          <div className="text-[9.5px] text-emerald-300/80">
+                            Cada {targetType} en 1 página individual (7 a 21 h)
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-white bg-emerald-700/80 px-2 py-0.5 rounded-md">
+                        {selectedBatchEntities.length} págs
+                      </span>
+                    </div>
+
+                    {/* Search & Checkbox list */}
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        placeholder={`Buscar en lista...`}
+                        value={batchSearchQuery}
+                        onChange={(e) => setBatchSearchQuery(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      />
+
+                      <div className="max-h-32 overflow-y-auto space-y-0.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
+                        {currentBatchUniverse
+                          .filter(name => !batchSearchQuery || name.toLowerCase().includes(batchSearchQuery.toLowerCase()))
+                          .map(name => {
+                            const isChecked = selectedBatchEntities.includes(name);
+                            return (
+                              <label
+                                key={name}
+                                className={`flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors text-[11px] ${
+                                  isChecked ? 'bg-cyan-950/60 text-cyan-200' : 'text-slate-400 hover:bg-slate-800'
+                                }`}
+                              >
+                                <span className="truncate">{targetType === 'grupo' ? `Grupo ${name}` : name}</span>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => toggleBatchEntity(name)}
+                                  className="rounded text-cyan-500 focus:ring-cyan-400 w-3.5 h-3.5 ml-2"
+                                />
+                              </label>
+                            );
+                          })}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* --- C. CONFIG FOR SINGLE ENTITY --- */}
+                {printScope === 'current' && (
+                  <>
+                    {/* Search & Select Entity Dropdown */}
+                    <div className="space-y-1.5">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder={`Filtrar ${targetType}...`}
+                          value={searchFilter}
+                          onChange={(e) => setSearchFilter(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                        />
+                        <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
+                      </div>
+
+                      <select
+                        value={selectedEntity}
+                        onChange={(e) => handleEntitySelect(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-cyan-300 focus:outline-hidden focus:ring-2 focus:ring-cyan-500 cursor-pointer max-h-36"
+                        size={availableEntities.length > 5 ? 4 : Math.max(3, availableEntities.length)}
+                      >
+                        {availableEntities.map(name => (
+                          <option key={name} value={name} className="py-1 px-2 hover:bg-cyan-900/50">
+                            {targetType === 'grupo' ? `Grupo ${name}` : name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Selected Entity Card */}
+                    <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-[11px] space-y-1">
+                      <div className="font-bold text-white truncate flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span className="truncate">{selectedEntity}</span>
+                      </div>
+                      <div className="text-slate-400 flex items-center justify-between text-[10px]">
+                        <span>Carga: <strong className="text-cyan-400">{stats.totalHours}</strong></span>
+                        <span>Materias: <strong className="text-slate-200">{stats.subjectsCount}</strong></span>
+                        <span>Salones: <strong className="text-slate-200">{stats.roomsCount}</strong></span>
+                      </div>
+                    </div>
+                  </>
+                )}
 
               </div>
 
-              {/* STEP 2: ORIENTATION SELECTOR (LANDSCAPE VS PORTRAIT) */}
+              {/* STEP 3: ORIENTATION SELECTOR (LANDSCAPE VS PORTRAIT) */}
               <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">2</span>
+                    <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">3</span>
                     Orientación de Página
                   </span>
                   <span className="text-[10px] text-cyan-300 font-mono">
-                    {printOptions.paperOrientation === 'landscape' ? 'Horizontal (11" × 8.5")' : 'Vertical (8.5" × 11")'}
+                    Horizontal (11" × 8.5")
                   </span>
                 </div>
 
@@ -513,7 +879,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                         <span>Horizontal</span>
                         {printOptions.paperOrientation === 'landscape' && <Check className="w-3 h-3 text-cyan-400" />}
                       </div>
-                      <div className="text-[9px] text-slate-400 mt-0.5">Landscape (Recomendado)</div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">Landscape (1 Hoja)</div>
                     </div>
                   </button>
 
@@ -540,117 +906,32 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                 </div>
               </div>
 
-              {/* STEP 3: FORMAT TEMPLATE */}
-              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
-                <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">3</span>
-                  Formato del Horario
-                </span>
-
-                <div className="space-y-1.5">
-                  {/* Option 1: Matrix */}
-                  <label
-                    onClick={() => updateOption('layout', 'matrix')}
-                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      printOptions.layout === 'matrix'
-                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
-                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="modalPrintLayout"
-                      checked={printOptions.layout === 'matrix'}
-                      onChange={() => updateOption('layout', 'matrix')}
-                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-xs">
-                        <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Cuadrícula Semanal</span>
-                        <span className="text-[9px] bg-cyan-900 text-cyan-300 px-1.5 py-0.2 rounded font-normal ml-auto">1 Página</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                        Horario visual semanal de L-V. El formato clásico y más práctico.
-                      </p>
-                    </div>
-                  </label>
-
-                  {/* Option 2: Full Document */}
-                  <label
-                    onClick={() => updateOption('layout', 'full')}
-                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      printOptions.layout === 'full'
-                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
-                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="modalPrintLayout"
-                      checked={printOptions.layout === 'full'}
-                      onChange={() => updateOption('layout', 'full')}
-                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-xs">
-                        <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Documento Completo Oficial</span>
-                        <span className="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded font-normal ml-auto">Completo</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                        Cuadrícula + Desglose detallado de materias + Firmas de validación.
-                      </p>
-                    </div>
-                  </label>
-
-                  {/* Option 3: Table Only */}
-                  <label
-                    onClick={() => updateOption('layout', 'table')}
-                    className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      printOptions.layout === 'table'
-                        ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
-                        : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="modalPrintLayout"
-                      checked={printOptions.layout === 'table'}
-                      onChange={() => updateOption('layout', 'table')}
-                      className="mt-0.5 text-cyan-600 focus:ring-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-xs">
-                        <TableIcon className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Solo Tabla Desglosada</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                        Lista detallada de claves, tipos (C/T/L), salones y cupos.
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
               {/* STEP 4: QUICK TOGGLES */}
               <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 space-y-2.5">
                 <span className="font-bold text-cyan-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <span className="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] flex items-center justify-center">4</span>
-                  Opciones Adicionales
+                  Ajustes de Impresión
                 </span>
 
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between p-2 bg-slate-950/50 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-800/60">
-                    <div className="flex items-center gap-2 text-xs">
-                      <PenTool className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Firmas de Validación Oficial</span>
+                  <label className="flex items-center justify-between p-2.5 bg-emerald-950/40 border border-emerald-500/50 rounded-xl cursor-pointer hover:bg-emerald-900/30 transition-all">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <div>
+                        <div className="font-bold text-xs text-emerald-200 flex items-center gap-1.5">
+                          <span>Ajustar exactamente en 1 Sola Hoja</span>
+                          <span className="text-[9px] bg-emerald-700 text-white px-1.5 py-0.2 rounded font-mono">7 a 21 h</span>
+                        </div>
+                        <p className="text-[9.5px] text-emerald-400/80 leading-tight">
+                          Compacta de 07:00 a 21:00 L-V para que quepa 100% en una hoja tamaño Carta.
+                        </p>
+                      </div>
                     </div>
                     <input
                       type="checkbox"
-                      checked={printOptions.showSignatures}
-                      onChange={(e) => updateOption('showSignatures', e.target.checked)}
-                      className="rounded text-cyan-600 focus:ring-cyan-500"
+                      checked={printOptions.fitToSinglePage !== false}
+                      onChange={(e) => updateOption('fitToSinglePage', e.target.checked)}
+                      className="rounded text-emerald-500 focus:ring-emerald-400 w-4 h-4 ml-2"
                     />
                   </label>
 
@@ -706,13 +987,51 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           }`}>
             
             {/* Live Preview Toolbar */}
-            <div className="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs shrink-0">
+            <div className="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs shrink-0 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="font-bold text-slate-200">Vista Previa en Vivo</span>
-                <span className="text-cyan-400 text-[11px] font-semibold bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-800/60">
-                  {printOptions.paperOrientation === 'landscape' ? 'Hoja Horizontal (Landscape)' : 'Hoja Vertical (Portrait)'}
+                <span className="font-bold text-slate-200">
+                  {printScope === 'master_matrix' ? 'Sábana Concentrada (1 Hoja)' : printScope === 'batch' ? 'Cuadernillo por Lote' : 'Vista Previa'}
                 </span>
+                
+                {printScope === 'batch' && selectedBatchEntities.length > 0 && (
+                  <div className="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setBatchPreviewIndex(prev => Math.max(0, prev - 1))}
+                      disabled={batchPreviewIndex === 0}
+                      className="p-0.5 hover:text-cyan-400 disabled:opacity-30 cursor-pointer"
+                      title="Hoja anterior"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="text-[11px] font-mono text-cyan-300 font-bold px-1">
+                      Hoja {batchPreviewIndex + 1} de {selectedBatchEntities.length}: <strong className="text-white">{currentBatchEntity}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setBatchPreviewIndex(prev => Math.min(selectedBatchEntities.length - 1, prev + 1))}
+                      disabled={batchPreviewIndex >= selectedBatchEntities.length - 1}
+                      className="p-0.5 hover:text-cyan-400 disabled:opacity-30 cursor-pointer"
+                      title="Hoja siguiente"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {printScope !== 'batch' && (
+                  <span className="text-cyan-400 text-[11px] font-semibold bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-800/60">
+                    Horizontal (11"×8.5")
+                  </span>
+                )}
+
+                {printOptions.fitToSinglePage !== false && (
+                  <span className="hidden xl:flex items-center gap-1 text-emerald-300 text-[11px] font-bold bg-emerald-950/70 px-2 py-0.5 rounded-md border border-emerald-500/60">
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    1 Sola Hoja (7:00 a 21:00 L-V)
+                  </span>
+                )}
               </div>
 
               {/* Toolbar Actions: Open clean tab & Zoom Controls */}
@@ -721,10 +1040,10 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                   type="button"
                   onClick={handleTriggerPrint}
                   className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 text-[11px] font-semibold transition-colors cursor-pointer"
-                  title="Abrir en pestaña completa e invocar impresión de tu computadora"
+                  title="Abrir diálogo de impresión de la computadora"
                 >
                   <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Pestaña Completa</span>
+                  <span>Impresión del Sistema</span>
                 </button>
 
                 <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-[11px]">
@@ -770,18 +1089,79 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                 }}
                 className="w-full flex justify-center"
               >
-                {/* Real Live Render of PrintSchedule with isPreview=true */}
-                <PrintSchedule
-                  ref={previewSheetRef}
-                  viewTitle={viewTitleText}
-                  sessions={printableSessions}
-                  lastLoadedAt={lastLoadedAt}
-                  printOptions={printOptions}
-                  isPreview={true}
-                />
+                {/* 1. MASTER MATRIX PREVIEW */}
+                {printScope === 'master_matrix' && (
+                  <MasterMatrixPrint
+                    ref={masterMatrixRef}
+                    type={targetType === 'asignatura' ? 'aula' : targetType}
+                    entities={targetType === 'aula' ? allClassrooms : targetType === 'grupo' ? allGroups : allProfessors}
+                    sessions={sessions}
+                    day={matrixDay}
+                    showActivities={printOptions.showActivities}
+                    filterMode={batchFilterMode}
+                    isPreview={true}
+                  />
+                )}
+
+                {/* 2. BATCH OR SINGLE PREVIEW */}
+                {printScope !== 'master_matrix' && (
+                  <PrintSchedule
+                    ref={previewSheetRef}
+                    viewTitle={viewTitleText}
+                    sessions={printableSessions}
+                    lastLoadedAt={lastLoadedAt}
+                    printOptions={{
+                      ...printOptions,
+                      targetType,
+                      targetName: printScope === 'batch' ? currentBatchEntity : selectedEntity
+                    }}
+                    isPreview={true}
+                  />
+                )}
               </div>
 
             </div>
+
+            {/* Hidden batch container: renders all selected entities in HTML for native batch printing */}
+            {printScope === 'batch' && (
+              <div ref={batchHiddenContainerRef} style={{ display: 'none' }} aria-hidden="true">
+                {selectedBatchEntities.map(ent => {
+                  const entSessions = sessions.filter(s => {
+                    if (targetType === 'aula') return s.aula === ent;
+                    if (targetType === 'profesor') return s.profesor === ent;
+                    if (targetType === 'grupo') return s.grupo === ent;
+                    if (targetType === 'asignatura') return s.asignatura === ent;
+                    return false;
+                  }).filter(s => {
+                    if (!printOptions.showActivities && isActivityOrResearchSession(s)) return false;
+                    return true;
+                  });
+
+                  return (
+                    <div
+                      key={ent}
+                      className="single-page-sheet batch-page-container"
+                      data-print-sheet="true"
+                      style={{ pageBreakAfter: 'always', breakAfter: 'page' }}
+                    >
+                      <PrintSchedule
+                        viewTitle={`${targetType === 'aula' ? 'AULA' : targetType === 'profesor' ? 'DOCENTE' : 'GRUPO'}: ${ent}`}
+                        sessions={entSessions}
+                        lastLoadedAt={lastLoadedAt}
+                        printOptions={{
+                          ...printOptions,
+                          fitToSinglePage: true,
+                          layout: 'matrix',
+                          targetType,
+                          targetName: ent
+                        }}
+                        isPreview={false}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Feedback notification toast */}
             {successMessage && (
@@ -795,7 +1175,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         </div>
 
-        {/* Modal Footer: Bulletproof Action Buttons */}
+        {/* Modal Footer: Action Buttons */}
         <div className="bg-slate-950 px-4 sm:px-6 py-3.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
           
           {/* Secondary formats: Excel, Image, Copy */}
@@ -849,20 +1229,26 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               disabled={isPrinting}
               id="btn-print-native"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-600 shadow-sm transition-all cursor-pointer disabled:opacity-50"
-              title="Abre directamente el cuadro de impresión de tu computadora (Windows / Mac / Linux) o Guardar como PDF del sistema"
+              title="Abre directamente el cuadro de impresión de tu computadora"
             >
               {isPrinting ? <Loader2 className="w-4 h-4 animate-spin text-cyan-400" /> : <Printer className="w-4 h-4 text-cyan-400" />}
-              <span>Imprimir en mi Laptop</span>
+              <span>
+                {printScope === 'master_matrix'
+                  ? 'Imprimir Sábana (1 Hoja)'
+                  : printScope === 'batch'
+                  ? `Imprimir Lote (${selectedBatchEntities.length} Hojas)`
+                  : 'Imprimir en mi Laptop'}
+              </span>
             </button>
 
-            {/* DIRECT PDF DOWNLOAD (INSTANT ONE-CLICK GENERATION) */}
+            {/* DIRECT PDF DOWNLOAD */}
             <button
               type="button"
               onClick={handleDownloadPDF}
               disabled={isExportingPDF}
               id="btn-download-pdf-direct"
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-              title="Descargar el archivo .pdf directo a tu carpeta de descargas"
+              title="Descargar el archivo .pdf directo"
             >
               {isExportingPDF ? (
                 <>
@@ -872,7 +1258,13 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               ) : (
                 <>
                   <FileDown className="w-4 h-4" />
-                  <span>Descargar PDF</span>
+                  <span>
+                    {printScope === 'master_matrix'
+                      ? 'Descargar Sábana PDF'
+                      : printScope === 'batch'
+                      ? `Guardar PDF (${selectedBatchEntities.length} págs)`
+                      : 'Descargar PDF'}
+                  </span>
                 </>
               )}
             </button>

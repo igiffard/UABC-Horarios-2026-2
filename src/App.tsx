@@ -65,12 +65,17 @@ export default function App() {
   }, [fetchData]);
 
   // Handler to open print modal with current context prefilled
-  const handleOpenPrintModal = useCallback((targetType?: 'profesor' | 'aula' | 'grupo' | 'asignatura', targetName?: string) => {
+  const handleOpenPrintModal = useCallback((
+    targetType?: 'profesor' | 'aula' | 'grupo' | 'asignatura',
+    targetName?: string,
+    initialScope?: 'current' | 'batch' | 'master_matrix'
+  ) => {
     const effectiveType = targetType || (activeTab === 'disponibilidad' ? 'profesor' : activeTab);
     const effectiveName = targetName || selectedEntityByTab[effectiveType] || '';
     
     setPrintOptions(prev => ({
       ...prev,
+      scope: initialScope || (targetName === undefined && targetType !== undefined ? 'batch' : prev.scope || 'current'),
       targetType: effectiveType,
       targetName: effectiveName,
       signerTeacher: effectiveType === 'profesor' && effectiveName ? effectiveName : prev.signerTeacher

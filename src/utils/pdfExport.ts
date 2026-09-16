@@ -7,6 +7,7 @@ export interface PDFExportOptions {
   paperSize?: 'letter' | 'a4';
   scale?: number;
   quality?: number;
+  fitToSinglePage?: boolean;
 }
 
 /**
@@ -108,17 +109,29 @@ export async function exportElementToPDF(
 
     const canvasWidthPx = canvas.width;
     const canvasHeightPx = canvas.height;
-    const ratio = canvasWidthPx / canvasHeightPx;
+    const shouldFitSinglePage = options.fitToSinglePage !== false;
 
-    const scaledHeight = printableWidth / ratio;
+    if (shouldFitSinglePage) {
+      // Guaranteed single page fit - fit both dimensions with margin
+      const scale = Math.min(printableWidth / canvasWidthPx, printableHeight / canvasHeightPx);
+      const finalWidth = canvasWidthPx * scale;
+      const finalHeight = canvasHeightPx * scale;
+      const xOffset = margin + Math.max(0, (printableWidth - finalWidth) / 2);
+      const yOffset = margin + Math.max(0, (printableHeight - finalHeight) / 2);
 
-    if (scaledHeight <= printableHeight) {
-      // Single page fit
       const imgData = canvas.toDataURL('image/jpeg', quality);
-      const yOffset = margin + Math.max(0, (printableHeight - scaledHeight) / 4);
-      pdf.addImage(imgData, 'JPEG', margin, yOffset, printableWidth, scaledHeight);
+      pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
     } else {
-      // Multi-page document slicing
+      const ratio = canvasWidthPx / canvasHeightPx;
+      const scaledHeight = printableWidth / ratio;
+
+      if (scaledHeight <= printableHeight) {
+        // Single page fit
+        const imgData = canvas.toDataURL('image/jpeg', quality);
+        const yOffset = margin + Math.max(0, (printableHeight - scaledHeight) / 4);
+        pdf.addImage(imgData, 'JPEG', margin, yOffset, printableWidth, scaledHeight);
+      } else {
+        // Multi-page document slicing
       const pxPerPage = (printableHeight / printableWidth) * canvasWidthPx;
       let renderedHeight = 0;
       let pageIndex = 0;
@@ -159,8 +172,9 @@ export async function exportElementToPDF(
         pageIndex++;
       }
     }
+  }
 
-    const cleanFilename = options.filename.replace(/[/\\?%*:|"<>]/g, '_');
+  const cleanFilename = options.filename.replace(/[/\\?%*:|"<>]/g, '_');
     pdf.save(cleanFilename.endsWith('.pdf') ? cleanFilename : `${cleanFilename}.pdf`);
   } finally {
     cleanup();
@@ -219,7 +233,9 @@ export async function exportElementToImage(
 export function printWithNativeDialog(
   elementHtml: string,
   documentTitle: string,
-  orientation: 'landscape' | 'portrait' = 'landscape'
+  orientation: 'landscape' | 'portrait' = 'landscape',
+  fitToSinglePage: boolean = true,
+  isBatch: boolean = false
 ): Promise<boolean> {
   return new Promise((resolve) => {
     // 1. Gather all active application CSS styles
@@ -237,7 +253,7 @@ export function printWithNativeDialog(
           <style>
             @page {
               size: letter ${orientation};
-              margin: 8mm 8mm 8mm 8mm;
+              margin: ${fitToSinglePage ? '4mm 4mm 4mm 4mm' : '8mm 8mm 8mm 8mm'};
             }
             * {
               box-sizing: border-box;
@@ -246,7 +262,7 @@ export function printWithNativeDialog(
             }
             body {
               margin: 0;
-              padding: 10px;
+              padding: ${fitToSinglePage ? '4px' : '10px'};
               font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               background: #ffffff !important;
               color: #000000 !important;
@@ -291,18 +307,34 @@ export function printWithNativeDialog(
               }
               .printable-content-wrapper {
                 margin-top: 60px;
-                padding: 20px;
+                padding: 10px;
                 display: flex;
-                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
               }
             }
             @media print {
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                ${isBatch ? 'height: auto !important; overflow: visible !important;' : (fitToSinglePage ? 'height: 100vh !important; max-height: 100vh !important; overflow: hidden !important;' : '')}
+              }
+              .single-page-sheet {
+                ${isBatch 
+                  ? 'page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: always !important; break-after: page !important; height: calc(100vh - 8mm) !important; max-height: calc(100vh - 8mm) !important; overflow: hidden !important;' 
+                  : (fitToSinglePage ? 'height: 100% !important; max-height: calc(100vh - 8mm) !important; overflow: hidden !important; page-break-inside: avoid !important; page-break-after: avoid !important;' : '')}
+              }
+              .single-page-sheet:last-child {
+                ${isBatch ? 'page-break-after: auto !important; break-after: auto !important;' : ''}
+              }
               .screen-print-bar {
                 display: none !important;
               }
               .printable-content-wrapper {
                 margin: 0 !important;
                 padding: 0 !important;
+                display: block !important;
               }
             }
           </style>
@@ -311,7 +343,7 @@ export function printWithNativeDialog(
         <body>
           <div class="screen-print-bar">
             <div>
-              <strong>${documentTitle}</strong> — Vista de Impresión Oficial UABC
+              <strong>${documentTitle}</strong> — Impresión Oficial UABC
             </div>
             <div style="display: flex; gap: 10px;">
               <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>

@@ -361,7 +361,10 @@ export function isConflictExempt(s: ScheduleSession): boolean {
     tipo.startsWith('I -') || 
     tipo === 'INV' || 
     tipo === 'INVESTIGACION' || 
-    tipo === 'INVESTIGACIÓN'
+    tipo === 'INVESTIGACIÓN' ||
+    tipo === 'A' ||
+    tipo === 'ACT' ||
+    tipo === 'ACTIVIDAD'
   ) {
     return true;
   }
@@ -380,6 +383,9 @@ export function isConflictExempt(s: ScheduleSession): boolean {
     asig.includes('INV. DIRIGIDA') ||
     asig.includes('INV.DIRIGIDA') ||
     asig.includes('INVESTIGACION') ||
+    asig.includes('TUTORIA') ||
+    asig.includes('ASESORIA') ||
+    asig.includes('GESTION') ||
     asig.includes('DE CAMPO')
   ) {
     return true;
@@ -511,7 +517,12 @@ export function calculateConflicts(sessions: ScheduleSession[]): { sessions: Sch
       }
 
       // 3. Choque de Grupo
-      if (a.grupo && b.grupo && a.grupo.trim() !== '' && a.grupo === b.grupo && a.asignatura !== b.asignatura) {
+      if (
+        a.grupo && b.grupo &&
+        a.grupo.trim() !== '' && b.grupo.trim() !== '' &&
+        a.grupo.trim() !== '-' && b.grupo.trim() !== '-' &&
+        a.grupo === b.grupo && a.asignatura !== b.asignatura
+      ) {
         const descA = `Choque de grupo (${a.grupo}) con "${b.asignatura}" (${b.horaInicio} - ${b.horaFin})`;
         const descB = `Choque de grupo (${b.grupo}) con "${a.asignatura}" (${a.horaInicio} - ${a.horaFin})`;
 

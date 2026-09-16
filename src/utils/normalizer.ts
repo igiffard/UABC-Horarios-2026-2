@@ -89,9 +89,31 @@ export function normalizeClassroom(rawRoom: string | undefined | null): string {
 
   const upper = s.toUpperCase();
   if (upper.includes('CPB')) return 'CPB';
+  // El aula SA es la misma que CPA: unificar dejando solo SA
+  if (
+    upper === 'CPA' || 
+    upper.includes('CPA') || 
+    upper.includes('CENTRO DE CÓMPUTO DE POSGRADO, SALA A') || 
+    upper.includes('CENTRO DE COMPUTO DE POSGRADO, SALA A') ||
+    upper === 'SA' || 
+    upper.includes('SALA DE ASESOR') || 
+    upper.includes('SALÓN DE ASESOR') || 
+    upper.includes('SALON DE ASESOR') || 
+    (upper.includes('SA') && upper.includes('E14'))
+  ) {
+    return 'SA';
+  }
   if (upper.includes('SPD')) return 'SPD';
   if (upper.includes('CCL') || upper.includes('CENTRO DE CÓMPUTO') || upper.includes('CENTRO DE COMPUTO')) return 'CCL';
   if (upper.includes('SFF')) return 'SFF';
+  if (
+    upper === 'P3' || 
+    upper === 'SP3' || 
+    (upper.includes('3') && upper.includes('POSGRADO') && upper.includes('IIO')) || 
+    (upper.includes('SAL') && upper.includes('3') && upper.includes('IIO'))
+  ) {
+    return 'P3';
+  }
   if (upper.includes('IIO')) return 'IIO';
   if (upper.includes('ESP')) return 'ESP';
   if (upper.includes('LFQ') || upper.includes('FISICOQU')) return 'LFQ';
@@ -102,8 +124,8 @@ export function normalizeClassroom(rawRoom: string | undefined | null): string {
   if (upper.includes('AM1')) return 'AM1';
   if (upper.includes('AM2')) return 'AM2';
   if (upper.includes('TOTOABA') || upper.includes('TOB')) return s.includes('B') ? 'TOB' : 'Totoaba A';
-  if (upper === 'SA' || upper.includes('SALA DE ASESOR') || (upper.includes('SA') && upper.includes('E14'))) return 'SA';
   if (upper === 'SC' || upper.includes('SALA DE CONSEJO') || upper.includes('CONSEJO')) return 'SC';
+  if (upper === 'SG' || upper.includes('SALA DE GEOLOG') || (upper.includes('GEOLOG') && !upper.includes('SGP'))) return 'SG';
   if (upper === 'SFE' || upper.includes('FÍSICA EXPERIMENTAL') || upper.includes('FISICA EXPERIMENTAL')) return 'SFE';
   if (upper === 'SB' || upper.includes('SALA DE BIOLOG') || upper.includes('SALA DE BIOLOGÍA')) return 'SB';
   if (upper.includes('GIMNASIO')) return 'Gimnasio';

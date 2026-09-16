@@ -37,7 +37,7 @@ interface AulaViewProps {
   classrooms: string[];
   onSelectSession: (session: ScheduleSession) => void;
   onOpenDirectory?: (category: DirectoryCategory) => void;
-  onOpenPrintModal?: (targetType?: 'aula', targetName?: string) => void;
+  onOpenPrintModal?: (targetType?: 'aula', targetName?: string, initialScope?: 'current' | 'batch' | 'master_matrix') => void;
   onOpenMapModal?: (buildingId?: string) => void;
   onSelectTeacher?: (teacherName: string) => void;
   selectedEntity?: string;
@@ -437,15 +437,27 @@ export const AulaView: React.FC<AulaViewProps> = ({
               )}
 
               {onOpenPrintModal && (
-                <button
-                  type="button"
-                  onClick={() => onOpenPrintModal('aula', selectedRoom)}
-                  title="Imprimir u obtener PDF del horario de este salón"
-                  className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimir Aula</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onOpenPrintModal('aula', selectedRoom, 'current')}
+                    title="Imprimir u obtener PDF del horario de este salón"
+                    className="px-3 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/30 cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Imprimir Aula</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenPrintModal('aula', undefined, 'batch')}
+                    title="Imprimir todas las aulas al mismo tiempo en un solo lote o en sábana concentrada"
+                    className="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Layers className="w-4 h-4 text-cyan-400" />
+                    <span>Todas las Aulas</span>
+                  </button>
+                </div>
               )}
 
             </div>

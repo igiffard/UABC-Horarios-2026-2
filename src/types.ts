@@ -30,7 +30,10 @@ export const DEFAULT_DISPLAY_OPTIONS: CalendarDisplayOptions = {
 
 export interface PrintOptions {
   layout: 'full' | 'matrix' | 'table'; // 'full' = Matriz + Tabla + Firmas; 'matrix' = Solo Matriz; 'table' = Solo Lista de Clases
-  scope: 'current' | 'custom' | 'batch';
+  fitToSinglePage?: boolean; // Ajuste matemático estricto en 1 sola hoja (7:00 a 21:00 L-V)
+  scope: 'current' | 'batch' | 'master_matrix';
+  batchFilter?: 'active' | 'main' | 'all';
+  matrixDay?: DayName;
   targetType: 'profesor' | 'aula' | 'grupo' | 'asignatura';
   targetName: string;
   showActivities: boolean; // Incluir Horas de Investigación / Actividades
@@ -48,19 +51,20 @@ export interface PrintOptions {
 }
 
 export const DEFAULT_PRINT_OPTIONS: PrintOptions = {
-  layout: 'full',
+  layout: 'matrix',
+  fitToSinglePage: true,
   scope: 'current',
   targetType: 'profesor',
   targetName: '',
   showActivities: true,
-  showSignatures: true,
+  showSignatures: false,
   showStats: true,
   showRoomCapacity: true,
   colorMode: 'color',
   fontSize: 'standard',
   paperOrientation: 'landscape',
-  includeNotes: true,
-  customNotes: 'Horario oficial sujeto a validación y cambios por la Coordinación Académica de la FCM.',
+  includeNotes: false,
+  customNotes: 'Horario oficial de la Facultad de Ciencias Marinas (07:00 a 21:00 h).',
   signerTeacher: 'Docente Titular',
   signerCoord: 'Coordinación de Carrera',
   signerDirector: 'Dirección de la FCM',

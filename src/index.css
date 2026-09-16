@@ -14,7 +14,7 @@
   /* Set page to Letter landscape */
   @page {
     size: letter landscape;
-    margin: 8mm 8mm 8mm 8mm;
+    margin: 5mm 5mm 5mm 5mm;
   }
 
   body {
@@ -50,6 +50,25 @@
     padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
+  }
+
+  /* Single page constraint */
+  .single-page-sheet {
+    height: 100% !important;
+    max-height: calc(100vh - 10mm) !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Batch mode: force new page per entity */
+  .batch-page-container {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    height: 100% !important;
+    max-height: calc(100vh - 8mm) !important;
+    overflow: hidden !important;
   }
 
   /* Prevent awkward breaks */
