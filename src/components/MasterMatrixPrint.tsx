@@ -66,7 +66,7 @@ export const MasterMatrixPrint = React.forwardRef<HTMLDivElement, MasterMatrixPr
       list = list.filter(e => activeOnDay.has(e));
     } else if (filterMode === 'main' && type === 'aula') {
       // Main classrooms priority
-      const mainNames = ['S1', 'S2', 'S3', 'S5', 'S6', 'S7', 'S8', 'SA', 'SB', 'SC', 'SG', 'SGP', 'CCL', 'CAI', 'AM', 'AM1', 'AM2', 'ESP', 'PT', 'AF1', 'AF2', 'AF3'];
+      const mainNames = ['S1', 'S2', 'S3', 'S5', 'S6', 'S7', 'S8', 'SA', 'SB', 'SC', 'SG', 'SGP', 'CCL', 'CAI', 'AM1', 'AM2', 'ESP', 'PT', 'AF1', 'AF2', 'AF3'];
       list = list.filter(e => mainNames.includes(e) || activeOnDay.has(e));
     }
 

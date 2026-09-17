@@ -121,8 +121,22 @@ export function normalizeClassroom(rawRoom: string | undefined | null): string {
   if (upper.includes('LQO') || upper.includes('QUÍMICA ORGÁNICA') || upper.includes('QUIMICA ORGANICA')) return 'LQO';
   if (upper.includes('LOB')) return 'LOB';
   if (upper.includes('LBQ')) return 'LBQ';
-  if (upper.includes('AM1')) return 'AM1';
-  if (upper.includes('AM2')) return 'AM2';
+  if (upper.includes('AM2') || upper.includes('AULA MAGNA 2') || upper.includes('AULA MAGNA II')) return 'AM2';
+  // Aula Magna 1: AM y AM1 consolidados en uno solo (AM1)
+  if (
+    upper === 'AM' ||
+    upper === 'AM1' ||
+    upper === 'AM 1' ||
+    upper.startsWith('AM ') ||
+    upper.startsWith('AM1 ') ||
+    upper.includes('AM1') ||
+    upper === 'AULA MAGNA' ||
+    upper.includes('AULA MAGNA 1') ||
+    upper.includes('AULA MAGNA I') ||
+    (upper.includes('AULA MAGNA') && !upper.includes('2') && !upper.includes('II'))
+  ) {
+    return 'AM1';
+  }
   if (upper.includes('TOTOABA') || upper.includes('TOB')) return s.includes('B') ? 'TOB' : 'Totoaba A';
   if (upper === 'SC' || upper.includes('SALA DE CONSEJO') || upper.includes('CONSEJO')) return 'SC';
   if (upper === 'SG' || upper.includes('SALA DE GEOLOG') || (upper.includes('GEOLOG') && !upper.includes('SGP'))) return 'SG';

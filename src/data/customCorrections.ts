@@ -554,5 +554,31 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     motivo: 'Se acordó cambio en el taller de manejo pesquero en acuerdo con el grupo habiendo quedado de la siguiente manera: los jueves de cuatro a seis de la tarde (16:00-18:00 h) en la Sala de Cómputo de la Licenciatura (CCL).',
     accionPendiente: 'Actualizado en sistema FCM',
     observaciones: 'Sesión de taller de los jueves ajustada de 17:00-19:00 a 16:00-18:00 h en la Sala de Cómputo de la Licenciatura (CCL, Edificio 14).'
+  },
+  // 14. Cambio Climático (Taller) – Mtra. Eliana Gómez Ocampo: Viernes 08:00-10:00 corrida y consolidada en Salón 2 (S2, Edificio 18)
+  {
+    id: '53',
+    fuenteRemitente: 'Gómez Ocampo Eliana / Solicitud docente',
+    profesor: 'GOMEZ OCAMPO ELIANA',
+    asignatura: 'CAMBIO CLIMATICO',
+    grupo: '209',
+    tipoActividad: 'T',
+    diaActual: 'Viernes',
+    horarioActual: '08:00-10:00',
+    salonActual: 'ECO',
+    diaSolicitado: 'Viernes',
+    horarioSolicitado: '08:00-10:00',
+    salonSolicitadoNuevo: 'S2',
+    registroActualCompleto: 'Cambio Climático (Taller) Gpo 209 | Viernes 08:00-10:00 | Salón 2 / Salón 4 (ECO, Edificio 18)',
+    registroSolicitadoCompleto: 'Cambio Climático (Taller) Gpo 209 | Viernes 08:00-10:00 | Salón 2 (S2, Edificio 18)',
+    tipoAjuste: 'Consolidación y asignación de salón continuo',
+    estadoAjuste: 'Aprobado e integrado',
+    disponibilidadVerificada: 'Sí, Salón 2 (S2, Edificio 18) verificado 100% libre los viernes de 08:00 a 11:00 h (siguiente sesión inicia a las 11:00 h con Grupo 305). No genera colisión.',
+    personasNotificadas: 'Mtra. Eliana Gómez Ocampo y alumnado Grupo 209',
+    motivo: 'La clase de Cambio Climático (taller) se encontraba registrada entre salones. Dado que el Salón 2 está desocupado hasta las 11:00 am, se unifica de corrido la sesión de 08:00 a 10:00 h en el Salón 2 sin interrupción ni cambio de aula.',
+    accionPendiente: 'Actualizado en sistema FCM',
+    observaciones: 'Sesión de taller de Cambio Climático los viernes de 08:00 a 10:00 h formalizada de corrido en Salón 2 (S2, Edificio 18). Salón 2 disponible y sin cruces.',
+    inscritos: 4,
+    cupoGrupo: 10
   }
 ];

@@ -73,8 +73,8 @@ export const ROOM_CATALOG: Record<string, CampusRoomInfo> = {
   'NUT': { code: 'NUT', name: 'Laboratorio de Nutrición', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Baja', type: 'Laboratorio' },
   'LNU': { code: 'LNU', name: 'Laboratorio de Nutrición', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Baja', type: 'Laboratorio' },
   'S8': { code: 'S8', name: 'Salón 8', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
-  'AM1': { code: 'AM1', name: 'Aula Magna I', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
-  'AM': { code: 'AM', name: 'Aula Magna I', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
+  'AM1': { code: 'AM1', name: 'Aula Magna 1', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
+  'AM': { code: 'AM1', name: 'Aula Magna 1', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
   'AM2': { code: 'AM2', name: 'Aula Magna II', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Alta', type: 'Aula / Salón' },
   'AF1': { code: 'AF1', name: 'Aula / Anexo de Física 1', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Baja', type: 'Aula / Salón' },
   'AF2': { code: 'AF2', name: 'Aula / Anexo de Física 2', buildingId: 'E-17', buildingName: 'Edificio 17', buildingNumber: '17', floor: 'Planta Baja', type: 'Aula / Salón' },
@@ -242,7 +242,7 @@ export const CAMPUS_BUILDINGS: CampusBuildingInfo[] = [
     color: '#d97706', // Amber
     badgeBg: 'bg-amber-50 border-amber-200 text-amber-800',
     badgeText: 'text-amber-700',
-    rooms: ['SFL', 'SB', 'LG', 'NUT', 'LNU', 'S8', 'AM1', 'AM', 'AM2', 'AF1', 'AF2', 'AF3'],
+    rooms: ['SFL', 'SB', 'LG', 'NUT', 'LNU', 'S8', 'AM1', 'AM2', 'AF1', 'AF2', 'AF3'],
     floors: {
       plantaBaja: [
         { code: 'SFL', name: 'Sala de Fluidos' },
@@ -255,7 +255,7 @@ export const CAMPUS_BUILDINGS: CampusBuildingInfo[] = [
       ],
       plantaAlta: [
         { code: 'S8', name: 'Salón 8' },
-        { code: 'AM1', name: 'Aula Magna I' },
+        { code: 'AM1', name: 'Aula Magna 1' },
         { code: 'AM2', name: 'Aula Magna II' }
       ]
     },

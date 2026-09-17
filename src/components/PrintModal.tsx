@@ -54,7 +54,7 @@ interface PrintModalProps {
 }
 
 const MAIN_ROOMS_NAMES = [
-  'S1', 'S2', 'S3', 'S5', 'S6', 'S7', 'S8', 'SA', 'SB', 'SC', 'SG', 'SGP', 'CCL', 'CAI', 'AM', 'AM1', 'AM2', 'ESP', 'PT', 'AF1', 'AF2', 'AF3'
+  'S1', 'S2', 'S3', 'S5', 'S6', 'S7', 'S8', 'SA', 'SB', 'SC', 'SG', 'SGP', 'CCL', 'CAI', 'AM1', 'AM2', 'ESP', 'PT', 'AF1', 'AF2', 'AF3'
 ];
 
 export const PrintModal: React.FC<PrintModalProps> = ({
