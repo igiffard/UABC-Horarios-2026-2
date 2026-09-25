@@ -205,36 +205,86 @@ export function formatDurationHours(durationMinutes: number): string {
 /**
  * Determina si una sesión corresponde a horas de investigación o actividades no docentes
  * (Tutorías, Horas de Investigación, Gestión, Asesorías, etc.)
+ * 
+ * IMPORTANTE:
+ * - Sólo debe considerar como investigación lo correspondiente a Horas de Investigación
+ *   (horas personales del investigador que no tienen alumnos).
+ * - Asignaturas curriculares cuyo nombre contenga la palabra "Investigación" (p.ej.
+ *   "INVESTIGACIÓN SOCIO-ECOLÓGICA", "TÉCNICAS DE INVESTIGACIÓN", etc.) o "Gestión"
+ *   son materias de docencia impartidas a alumnos en aula y NUNCA deben ocultarse.
  */
-export function isActivityOrResearchSession(session: { tipo?: string; asignatura?: string; claveUA?: string } | null | undefined): boolean {
+export function isActivityOrResearchSession(session: { 
+  tipo?: string; 
+  asignatura?: string; 
+  claveUA?: string;
+  grupo?: string;
+  source?: string;
+} | null | undefined): boolean {
   if (!session) return false;
 
   const tipo = (session.tipo || '').toUpperCase().trim();
-  if (tipo === 'A' || tipo === 'ACT' || tipo === 'ACTIVIDAD') return true;
-
+  const asig = cleanText(session.asignatura).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
   const clave = (session.claveUA || '').trim();
+  const grupo = (session.grupo || '').trim();
+  const source = (session.source || '').trim();
+
+  // 1. REGLA ESTRICTA DE PROTECCIÓN DE ASIGNATURAS / MATERIAS:
+  // Si pertenece a Base 1 (Licenciatura), Base 2 (Posgrado),
+  // o tiene una clave de materia válida y un grupo académico,
+  // y es de tipo docente ('C', 'T', 'L', 'P'),
+  // NUNCA debe clasificarse como Horas de Investigación ni actividad no docente.
+  const hasRealSubjectCode = clave.length > 0 && clave !== '0' && !clave.startsWith('0000');
+  const hasAcademicGroup = grupo.length > 0 && grupo !== '-' && grupo !== '000';
+  const isTeachingType = tipo === 'C' || tipo === 'T' || tipo === 'L' || tipo === 'P';
+
+  if ((source.includes('Base 1') || source.includes('Base 2') || (hasRealSubjectCode && hasAcademicGroup)) && isTeachingType) {
+    return false;
+  }
+
+  // Si la clave es de actividad genérica (0000)
   if (clave.startsWith('0000') || clave === '000000') return true;
 
-  const asig = cleanText(session.asignatura).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (!asig) return false;
-
+  // 2. HORAS DE INVESTIGACIÓN (Estrictamente horas de investigación personal):
   if (
-    asig.includes('INVESTIGACION') ||
-    asig.includes('INVESTIGADOR') ||
-    asig.includes('TUTORIA') ||
-    asig.includes('ASESORIA') ||
-    asig.includes('GESTION') ||
+    asig === 'HORAS DE INVESTIGACION' ||
+    asig === 'HORA DE INVESTIGACION' ||
+    asig.startsWith('HORAS DE INVESTIGACION') ||
+    asig.startsWith('HORA DE INVESTIGACION') ||
+    asig.startsWith('HORAS INVESTIGACION') ||
+    asig === 'INVESTIGACION'
+  ) {
+    return true;
+  }
+
+  // 3. ACTIVIDADES NO DOCENTES INSTITUCIONALES (Base 3):
+  // Tutorías de licenciatura/posgrado (no asignaturas formales), asesorías, comisiones, gestión directiva
+  if (
+    asig.startsWith('TUTORIAS DE ') ||
+    asig === 'TUTORIAS' ||
+    asig === 'ASESORIA ACADEMICA' ||
+    asig === 'ASESORIAS' ||
+    asig === 'GESTION ACADEMICA' ||
+    asig === 'GESTION INSTITUCIONAL' ||
+    asig === 'COMISION ACADEMICA' ||
+    asig.startsWith('COORDINACION DE ') ||
+    asig.startsWith('COORDINADOR DE ') ||
+    asig === 'DIRECTOR' ||
+    asig === 'SUBDIRECTOR' ||
+    asig === 'A/O SABATICO' ||
     asig.includes('ACTIVIDAD DE APOYO') ||
     asig.includes('APOYO A LA DOCENCIA') ||
     asig.includes('PREPARACION DE CLASE') ||
-    asig.includes('COMISION') ||
-    asig.includes('COORDINACION') ||
-    asig.includes('DIRECCION DE TESIS') ||
-    asig.includes('HORAS DE INVESTIGACION')
+    asig.includes('DIRECCION DE TESIS')
   ) {
+    return true;
+  }
+
+  // 4. Tipo explícito de actividad administrativa (A / ACT) que no sea materia formal
+  if ((tipo === 'A' || tipo === 'ACT' || tipo === 'ACTIVIDAD') && !hasRealSubjectCode) {
     return true;
   }
 
   return false;
 }
+
 

@@ -442,13 +442,15 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     profesor: 'ZEPEDA DOMINGUEZ JOSE ALBERTO',
     asignatura: 'INVESTIGACIÓN SOCIO-ECOLÓGICA: DE LA TEORÍA A LA PRÁCTICA',
     grupo: '403',
-    tipoActividad: '',
+    tipoActividad: 'C',
     diaActual: 'Martes',
     horarioActual: '08:00-10:00',
     salonActual: 'SA',
     diaSolicitado: 'Martes',
     horarioSolicitado: '08:00-10:00',
     salonSolicitadoNuevo: 'S5',
+    cupoGrupo: 5,
+    inscritos: 5,
     registroActualCompleto: 'Investigación Socio-Ecológica Gpo 403 | Martes 08:00-10:00 | SA (CPA)',
     registroSolicitadoCompleto: 'Investigación Socio-Ecológica Gpo 403 | Martes 08:00-10:00 | Salón 5 (S5, Edificio 18)',
     tipoAjuste: 'Cambio de salón',
@@ -457,7 +459,7 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     personasNotificadas: 'Dr. Zepeda y estudiantes Gpo 403',
     motivo: 'El aula SA es la misma que CPA. Para evitar traslapes en el aula SA, la clase del Dr. Zepeda de los martes de 8:00 a 10:00 h se traslada al Salón 5.',
     accionPendiente: 'Actualizado en sistema FCM',
-    observaciones: 'Sesión de los martes de 8:00 a 10:00 h transferida de SA al Salón 5 (S5, Edificio 18).'
+    observaciones: 'Sesión de los martes de 8:00 a 10:00 h transferida de SA al Salón 5 (S5, Edificio 18). Matrícula oficial de posgrado: 5 alumnos autorizados.'
   },
   // 10. Investigación Socio-Ecológica – Dr. José Alberto Zepeda Domínguez: Jueves 08:00-10:00 (SA/CPA -> Salón SG, E18)
   {
@@ -466,13 +468,15 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     profesor: 'ZEPEDA DOMINGUEZ JOSE ALBERTO',
     asignatura: 'INVESTIGACIÓN SOCIO-ECOLÓGICA: DE LA TEORÍA A LA PRÁCTICA',
     grupo: '403',
-    tipoActividad: '',
+    tipoActividad: 'T',
     diaActual: 'Jueves',
     horarioActual: '08:00-10:00',
     salonActual: 'SA',
     diaSolicitado: 'Jueves',
     horarioSolicitado: '08:00-10:00',
     salonSolicitadoNuevo: 'SG',
+    cupoGrupo: 5,
+    inscritos: 5,
     registroActualCompleto: 'Investigación Socio-Ecológica Gpo 403 | Jueves 08:00-10:00 | SA (CPA)',
     registroSolicitadoCompleto: 'Investigación Socio-Ecológica Gpo 403 | Jueves 08:00-10:00 | Sala de Geología (SG, Edificio 18)',
     tipoAjuste: 'Cambio de salón',
@@ -481,7 +485,7 @@ export const ADDITIONAL_CORRECTIONS: CorrectionRecord[] = [
     personasNotificadas: 'Dr. Zepeda y estudiantes Gpo 403',
     motivo: 'El aula SA es la misma que CPA. Para evitar traslapes en el aula SA, la clase del Dr. Zepeda de los jueves de 8:00 a 10:00 h se traslada al salón SG.',
     accionPendiente: 'Actualizado en sistema FCM',
-    observaciones: 'Sesión de los jueves de 8:00 a 10:00 h transferida de SA a la Sala de Geología (SG, Edificio 18).'
+    observaciones: 'Sesión de los jueves de 8:00 a 10:00 h transferida de SA a la Sala de Geología (SG, Edificio 18). Matrícula oficial de posgrado: 5 alumnos autorizados.'
   },
   // 11. Comprensión de Artículos Científicos en Inglés – Dra. Claudia María Wall Medrano: Viernes 09:00-11:00 (SA/CPA -> SC, E14)
   {

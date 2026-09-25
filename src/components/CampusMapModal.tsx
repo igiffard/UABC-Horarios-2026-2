@@ -42,6 +42,8 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>(initialBuildingId);
   const [activeTab, setActiveTab] = useState<'map' | 'directory'>('map');
   const [searchDirectoryTerm, setSearchDirectoryTerm] = useState<string>('');
+  const [mapSearchTerm, setMapSearchTerm] = useState<string>('');
+  const [highlightedRoom, setHighlightedRoom] = useState<string | null>(null);
   const [hoveredBuilding, setHoveredBuilding] = useState<string | null>(null);
 
   // Sync initial building
@@ -50,6 +52,29 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
       setSelectedBuildingId(initialBuildingId);
     }
   }, [initialBuildingId]);
+
+  const handleMapSearch = (query: string) => {
+    setMapSearchTerm(query);
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      setHighlightedRoom(null);
+      return;
+    }
+    const entries = Object.entries(ROOM_CATALOG);
+    const match = entries.find(([key, info]) =>
+      key.toLowerCase().includes(q) ||
+      info.code.toLowerCase().includes(q) ||
+      info.name.toLowerCase().includes(q)
+    );
+
+    if (match) {
+      const [code, info] = match;
+      if (info.buildingId !== 'VIRTUAL') {
+        setSelectedBuildingId(info.buildingId);
+      }
+      setHighlightedRoom(info.code);
+    }
+  };
 
   const selectedBuilding = useMemo(() => {
     return CAMPUS_BUILDINGS.find(b => b.id === selectedBuildingId) || CAMPUS_BUILDINGS[0];
@@ -180,31 +205,57 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
           {activeTab === 'map' ? (
             <div className="p-4 sm:p-6 space-y-6">
               
-              {/* Top Banner Guide */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 flex items-center justify-between gap-3 flex-wrap">
+              {/* Top Banner Guide with Instant Room Finder */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Info className="w-4 h-4 text-cyan-600 shrink-0" />
                   <span>
-                    <strong>Instrucciones:</strong> Haz clic en cualquier edificio del mapa satelital para ver sus aulas, laboratorios y la <strong>plantilla docente completa lista para copiar a Gmail</strong>.
+                    <strong>Explorador del Campus:</strong> Haz clic en cualquier edificio del mapa o busca cualquier aula por clave para localizarla.
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-semibold text-slate-500">Ir directo a:</span>
-                  {['E-21', 'E-18', 'E-17', 'E-16', 'E-14', 'E-15', 'E-25', 'E-56'].map(id => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSelectedBuildingId(id)}
-                      className={`px-2 py-0.5 rounded text-xs font-bold transition-all cursor-pointer ${
-                        selectedBuildingId === id 
-                          ? 'bg-cyan-700 text-white shadow-xs' 
-                          : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {id}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Instant Room Search */}
+                  <div className="relative min-w-[210px]">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Localizar aula (ej. P5, Fermán)..."
+                      value={mapSearchTerm}
+                      onChange={(e) => handleMapSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs placeholder:text-slate-400 focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500"
+                    />
+                    {mapSearchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => handleMapSearch('')}
+                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-[10px]"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-semibold text-slate-500">Edificios:</span>
+                    {['E-21', 'E-18', 'E-17', 'E-16', 'E-14', 'E-15', 'E-25', 'E-56'].map(id => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedBuildingId(id);
+                          setHighlightedRoom(null);
+                        }}
+                        className={`px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                          selectedBuildingId === id 
+                            ? 'bg-cyan-700 text-white shadow-xs' 
+                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {id}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -648,18 +699,32 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                         <div className="space-y-1">
                           <span className="text-[11px] font-bold text-slate-500 uppercase">Planta Baja:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {selectedBuilding.floors.plantaBaja.map(r => (
-                              <div
-                                key={r.code}
-                                onClick={() => onSelectRoom?.(r.code)}
-                                className="p-2 rounded-lg bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-colors cursor-pointer text-xs"
-                              >
-                                <span className="font-bold text-cyan-900 font-mono">{r.code}</span>
-                                <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
-                                  {r.name}
-                                </span>
-                              </div>
-                            ))}
+                            {selectedBuilding.floors.plantaBaja.map(r => {
+                              const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
+                              return (
+                                <div
+                                  key={r.code}
+                                  onClick={() => onSelectRoom?.(r.code)}
+                                  className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
+                                    isMatch
+                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    {isMatch && (
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                        Aquí
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                    {r.name}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -669,39 +734,102 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                         <div className="space-y-1 pt-1">
                           <span className="text-[11px] font-bold text-slate-500 uppercase">Planta Alta:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {selectedBuilding.floors.plantaAlta.map(r => (
-                              <div
-                                key={r.code}
-                                onClick={() => onSelectRoom?.(r.code)}
-                                className="p-2 rounded-lg bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-colors cursor-pointer text-xs"
-                              >
-                                <span className="font-bold text-cyan-900 font-mono">{r.code}</span>
-                                <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
-                                  {r.name}
-                                </span>
-                              </div>
-                            ))}
+                            {selectedBuilding.floors.plantaAlta.map(r => {
+                              const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
+                              return (
+                                <div
+                                  key={r.code}
+                                  onClick={() => onSelectRoom?.(r.code)}
+                                  className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
+                                    isMatch
+                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    {isMatch && (
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                        Aquí
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                    {r.name}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
 
-                      {/* Parte Posterior / Otros */}
+                      {/* Parte Posterior / Talleres */}
                       {selectedBuilding.floors.partePosterior && selectedBuilding.floors.partePosterior.length > 0 && (
                         <div className="space-y-1 pt-1">
                           <span className="text-[11px] font-bold text-slate-500 uppercase">Parte Posterior / Talleres:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {selectedBuilding.floors.partePosterior.map(r => (
-                              <div
-                                key={r.code}
-                                onClick={() => onSelectRoom?.(r.code)}
-                                className="p-2 rounded-lg bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-colors cursor-pointer text-xs"
-                              >
-                                <span className="font-bold text-cyan-900 font-mono">{r.code}</span>
-                                <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
-                                  {r.name}
-                                </span>
-                              </div>
-                            ))}
+                            {selectedBuilding.floors.partePosterior.map(r => {
+                              const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
+                              return (
+                                <div
+                                  key={r.code}
+                                  onClick={() => onSelectRoom?.(r.code)}
+                                  className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
+                                    isMatch
+                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    {isMatch && (
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                        Aquí
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                    {r.name}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Otros Espacios / Piso 2 */}
+                      {selectedBuilding.floors.otros && selectedBuilding.floors.otros.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase">Piso 2 / Otros Espacios Docentes:</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {selectedBuilding.floors.otros.map(r => {
+                              const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
+                              return (
+                                <div
+                                  key={r.code}
+                                  onClick={() => onSelectRoom?.(r.code)}
+                                  className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
+                                    isMatch
+                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
+                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={`font-bold font-mono text-[11px] ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    {isMatch && (
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                        Aquí
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                    {r.name}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

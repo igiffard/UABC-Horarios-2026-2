@@ -43,6 +43,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onSelectTab }
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
+                {tab.id === 'disponibilidad' && (
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                    isActive ? 'bg-cyan-700 text-cyan-200' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    Dashboard
+                  </span>
+                )}
               </button>
             );
           })}

@@ -318,8 +318,8 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                     const isInvestigacion = (
                       session.tipo?.toUpperCase() === 'I' ||
                       session.tipo?.toUpperCase().startsWith('I') ||
-                      session.asignatura?.toUpperCase().includes('INVESTIGACION') ||
-                      session.asignatura?.toUpperCase().includes('INVESTIGACIÓN')
+                      session.asignatura?.toUpperCase().startsWith('HORAS DE INVESTIGAC') ||
+                      session.asignatura?.toUpperCase().includes('INVESTIGACION DIRIGIDA')
                     );
 
                     const isActivity = isActivityOrResearchSession(session);
@@ -373,17 +373,26 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                   </span>
                                 )}
 
-                                {options.showCapacity && session.inscritos !== undefined && session.inscritos !== null && !isUltraCompact && (
-                                  <span 
-                                    title={`Inscritos: ${session.inscritos} alumnos | Cupo Grupo: ${session.cupoGrupo ?? 'N/A'}${session.capacidadSalon ? ` | Capacidad Salón: ${session.capacidadSalon}` : ''}`} 
-                                    className={`px-1 py-0.2 rounded font-bold text-[7.5px] border ${
-                                      session.alertaSobrecupo
-                                        ? 'bg-rose-100 text-rose-900 border-rose-300 animate-pulse'
-                                        : 'bg-cyan-50 text-cyan-900 border-cyan-200'
-                                    }`}
-                                  >
-                                    👤 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''}
-                                  </span>
+                                {options.showCapacity && !isUltraCompact && (
+                                  (session.inscritos !== undefined && session.inscritos !== null) ? (
+                                    <span 
+                                      title={`Inscritos: ${session.inscritos} alumnos | Cupo Grupo: ${session.cupoGrupo ?? 'N/A'}${session.capacidadSalon ? ` | Capacidad Salón: ${session.capacidadSalon}` : ''}`} 
+                                      className={`px-1 py-0.2 rounded font-bold text-[7.5px] border ${
+                                        session.alertaSobrecupo
+                                          ? 'bg-rose-100 text-rose-900 border-rose-300 animate-pulse'
+                                          : 'bg-cyan-50 text-cyan-900 border-cyan-200'
+                                      }`}
+                                    >
+                                      👤 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''}
+                                    </span>
+                                  ) : (session.cupoGrupo !== undefined && session.cupoGrupo !== null) ? (
+                                    <span 
+                                      title={`Cupo Grupo: ${session.cupoGrupo} alumnos${session.capacidadSalon ? ` | Capacidad Salón: ${session.capacidadSalon}` : ''}`} 
+                                      className="px-1 py-0.2 rounded font-bold text-[7.5px] border bg-cyan-50 text-cyan-900 border-cyan-200"
+                                    >
+                                      👤 {session.cupoGrupo}
+                                    </span>
+                                  ) : null
                                 )}
                               </div>
 
@@ -526,14 +535,20 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                 </span>
                               )}
 
-                              {options.showCapacity && session.inscritos !== undefined && session.inscritos !== null && !isUltraCompact && (
-                                <span className={`text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 ${
-                                  session.alertaSobrecupo
-                                    ? 'bg-amber-100 text-amber-900 border-amber-300'
-                                    : 'bg-white/80 text-slate-800 border-black/5'
-                                }`}>
-                                  👥 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''} est.
-                                </span>
+                              {options.showCapacity && !isUltraCompact && (
+                                (session.inscritos !== undefined && session.inscritos !== null) ? (
+                                  <span className={`text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 ${
+                                    session.alertaSobrecupo
+                                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                      : 'bg-white/80 text-slate-800 border-black/5'
+                                  }`}>
+                                    👥 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''} est.
+                                  </span>
+                                ) : (session.cupoGrupo !== undefined && session.cupoGrupo !== null) ? (
+                                  <span className="text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 bg-white/80 text-slate-800 border-black/5">
+                                    👥 Cupo: {session.cupoGrupo}
+                                  </span>
+                                ) : null
                               )}
                             </div>
                           </div>

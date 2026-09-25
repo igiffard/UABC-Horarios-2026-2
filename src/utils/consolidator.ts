@@ -268,9 +268,11 @@ export function applyCorrections(
         const updatedEdificio = (roomDetails && roomDetails.buildingNumber) ? roomDetails.buildingNumber : orig.edificio;
         const updatedInscritos = corr.inscritos !== undefined && corr.inscritos !== null ? corr.inscritos : orig.inscritos;
         const updatedCupo = corr.cupoGrupo !== undefined && corr.cupoGrupo !== null ? corr.cupoGrupo : (orig.cupoGrupo ?? updatedInscritos);
+        const updatedTipo = (corr.tipoActividad && corr.tipoActividad.trim().length > 0) ? corr.tipoActividad.trim() : orig.tipo;
 
         sessions[idx] = {
           ...orig,
+          tipo: updatedTipo,
           dia: updatedDia,
           diaIndex: getDayIndex(updatedDia),
           horaInicio: updatedStart,
@@ -360,13 +362,15 @@ export function isConflictExempt(s: ScheduleSession): boolean {
     tipo.startsWith('I-') || 
     tipo.startsWith('I -') || 
     tipo === 'INV' || 
-    tipo === 'INVESTIGACION' || 
-    tipo === 'INVESTIGACIÓN' ||
     tipo === 'A' ||
     tipo === 'ACT' ||
     tipo === 'ACTIVIDAD'
   ) {
-    return true;
+    // Si es actividad o investigación personal sin aula física asignada, está exenta
+    const aulaStr = cleanText(s.aula || '').toUpperCase();
+    if (!aulaStr || aulaStr === 'SIN AULA ASIGNADA' || aulaStr.includes('CAMPO')) {
+      return true;
+    }
   }
 
   // 2. Nombre de la asignatura / actividad
@@ -382,11 +386,11 @@ export function isConflictExempt(s: ScheduleSession): boolean {
     asig.includes('INV DIRIGIDA') ||
     asig.includes('INV. DIRIGIDA') ||
     asig.includes('INV.DIRIGIDA') ||
-    asig.includes('INVESTIGACION') ||
-    asig.includes('TUTORIA') ||
-    asig.includes('ASESORIA') ||
-    asig.includes('GESTION') ||
-    asig.includes('DE CAMPO')
+    asig.startsWith('HORAS DE INVESTIGACION') ||
+    asig.startsWith('HORAS INVESTIGACION') ||
+    asig.startsWith('TUTORIAS DE ') ||
+    asig === 'HORAS DE INVESTIGACION' ||
+    asig === 'DE CAMPO'
   ) {
     return true;
   }
@@ -661,6 +665,22 @@ export function enrichSessionsWithCapacitiesAndEnrollment(
         s.profesor = matchedGroup.docente;
         s.noEmpleado = matchedGroup.noEmpleado;
       }
+    }
+
+    // Si no se encontró en Base 5 o Base 6 (p.ej. Posgrado de Base 2),
+    // utilizar el cupo oficial del grupo registrado en la tabla base (columna Capacidad)
+    if (cupoGrupo === null && s.capacidad !== null && s.capacidad !== undefined && s.capacidad > 0) {
+      cupoGrupo = s.capacidad;
+    }
+    // En posgrado, la matrícula autorizada/inscritos corresponde al cupo registrado en el catálogo
+    if (inscritos === null && cupoGrupo !== null && (
+      s.source.includes('Base 2') || 
+      s.source.includes('Posgrado') || 
+      s.programa?.toUpperCase().includes('DOCTORADO') || 
+      s.programa?.toUpperCase().includes('MAESTR') || 
+      s.programa?.toUpperCase().includes('ESPECIALIDAD')
+    )) {
+      inscritos = cupoGrupo;
     }
 
     // 3. Buscar Capacidad Física del Salón / Aula

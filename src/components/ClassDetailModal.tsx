@@ -16,20 +16,22 @@ export const ClassDetailModal: React.FC<ClassDetailModalProps> = ({ session, onC
     session.asignatura?.toUpperCase().includes('CAMPO') || 
     session.aula?.toUpperCase().includes('CAMPO');
 
-  const isInvestigacion = session.tipo?.toUpperCase() === 'I' || 
+  const isHorasInv = session.asignatura?.toUpperCase().includes('HORAS DE INVESTIGAC') || session.asignatura?.toUpperCase().trim() === 'INVESTIGACION';
+  const isInvestigacionDirigida = session.tipo?.toUpperCase() === 'I' || 
     session.tipo?.toUpperCase().startsWith('I') || 
-    session.asignatura?.toUpperCase().includes('INVESTIGACION') || 
-    session.asignatura?.toUpperCase().includes('INVESTIGACIÓN');
+    session.asignatura?.toUpperCase().includes('INVESTIGACION DIRIGIDA');
 
   const isExempt = isConflictExempt(session);
 
   let tipoLabel = 'Clase Teórica';
   if (isCampo) tipoLabel = 'Práctica de Campo (P)';
-  else if (isInvestigacion) tipoLabel = 'Investigación Dirigida (I)';
+  else if (isHorasInv) tipoLabel = 'Horas de Investigación';
+  else if (isInvestigacionDirigida) tipoLabel = 'Investigación Dirigida (I)';
   else if (session.tipo === 'P') tipoLabel = 'Práctica';
   else if (session.tipo === 'T') tipoLabel = 'Taller';
   else if (session.tipo === 'L') tipoLabel = 'Laboratorio';
   else if (session.tipo === 'A') tipoLabel = 'Actividad Académica';
+  else if (session.tipo === 'C') tipoLabel = 'Clase (Teórica)';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
@@ -51,12 +53,12 @@ export const ClassDetailModal: React.FC<ClassDetailModalProps> = ({ session, onC
             <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md flex items-center gap-1 ${
               isCampo 
                 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' 
-                : isInvestigacion 
+                : isHorasInv || isInvestigacionDirigida
                 ? 'bg-indigo-950 text-indigo-400 border border-indigo-800' 
                 : 'bg-cyan-950 text-cyan-400 border border-cyan-800'
             }`}>
               {isCampo && <Compass className="w-3 h-3 text-emerald-400" />}
-              {isInvestigacion && <BookMarked className="w-3 h-3 text-indigo-400" />}
+              {(isHorasInv || isInvestigacionDirigida) && <BookMarked className="w-3 h-3 text-indigo-400" />}
               {tipoLabel}
             </span>
 

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Clock, Building2, User, Search, CheckCircle2, XCircle, Sparkles, Filter, ChevronRight } from 'lucide-react';
+import { Clock, Building2, User, Search, CheckCircle2, XCircle, Sparkles, Filter, ChevronRight, BarChart3 } from 'lucide-react';
 import { ScheduleSession, DayName } from '../types';
 import { CONFIG } from '../config';
 import { AutocompleteInput } from './AutocompleteInput';
+import { BuildingOccupancyDashboard } from './BuildingOccupancyDashboard';
 import {
   getProfessorAvailability,
   getClassroomAvailability,
@@ -18,7 +19,7 @@ interface DisponibilidadViewProps {
   onSelectSession: (session: ScheduleSession) => void;
 }
 
-type SubTab = 'aula_dia' | 'prof_dia' | 'buscar_aulas' | 'buscar_profs' | 'duracion_minima';
+type SubTab = 'dashboard' | 'buscar_aulas' | 'buscar_profs' | 'aula_dia' | 'prof_dia' | 'duracion_minima';
 
 const DAYS = CONFIG.CALENDAR.DAYS;
 
@@ -38,7 +39,7 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
   classrooms,
   onSelectSession
 }) => {
-  const [subTab, setSubTab] = useState<SubTab>('buscar_aulas');
+  const [subTab, setSubTab] = useState<SubTab>('dashboard');
 
   // State for sub-tabs
   const [selectedDay, setSelectedDay] = useState<DayName>('Lunes');
@@ -91,6 +92,24 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
       <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs search-container">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           
+          <button
+            type="button"
+            onClick={() => setSubTab('dashboard')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              subTab === 'dashboard'
+                ? 'bg-cyan-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Dashboard de Ocupación</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+              subTab === 'dashboard' ? 'bg-cyan-700 text-cyan-100' : 'bg-cyan-100 text-cyan-800'
+            }`}>
+              Horas Pico
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => setSubTab('buscar_aulas')}
@@ -158,6 +177,26 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
 
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 0. DASHBOARD VISUAL DE OCUPACIÓN Y HORAS PICO */}
+      {/* ========================================================================= */}
+      {subTab === 'dashboard' && (
+        <BuildingOccupancyDashboard
+          sessions={sessions}
+          classrooms={classrooms}
+          onSelectClassroom={(room) => {
+            setSelectedRoom(room);
+            setSubTab('aula_dia');
+          }}
+          onNavigateToAvailableRooms={(day, start, end) => {
+            setSelectedDay(day);
+            setStartTime(start);
+            setEndTime(end);
+            setSubTab('buscar_aulas');
+          }}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* 1. BUSCAR AULAS LIBRES EN RANGO (Día + Hora Inicio + Hora Fin) */}
