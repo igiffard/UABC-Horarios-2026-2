@@ -16,9 +16,27 @@ import {
   Check, 
   Users,
   Eye,
-  Info
+  Info,
+  BarChart3,
+  TrendingUp,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpRight
 } from 'lucide-react';
-import { ScheduleSession, DirectoryCategory } from '../types';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Cell,
+  ReferenceLine,
+  Legend
+} from 'recharts';
+import { ScheduleSession, DirectoryCategory, DayName } from '../types';
 import { AutocompleteInput } from './AutocompleteInput';
 import { WeeklyCalendar } from './WeeklyCalendar';
 import { formatDurationHours } from '../utils/normalizer';
@@ -43,6 +61,23 @@ interface AulaViewProps {
   selectedEntity?: string;
 }
 
+// Operating schedule parameters (07:00 to 21:00 = 14 hours / day = 840 min)
+const DAY_START_MINUTES = 7 * 60; // 420
+const DAY_END_MINUTES = 21 * 60;  // 1260
+const OPERATING_HOURS_PER_DAY = 14;
+const OPERATING_MINUTES_PER_DAY = 14 * 60; // 840
+const WEEKLY_HOURS_PER_ROOM = 70;
+const WEEKLY_MINUTES_PER_ROOM = 70 * 60; // 4200
+const WEEKDAYS: DayName[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
+const DAY_COLORS: Record<string, string> = {
+  'Lunes': '#0284c7',    // Sky 600
+  'Martes': '#0d9488',   // Teal 600
+  'Miércoles': '#059669',// Emerald 600
+  'Jueves': '#d97706',   // Amber 600
+  'Viernes': '#8b5cf6',  // Violet 500
+};
+
 export const AulaView: React.FC<AulaViewProps> = ({
   sessions,
   classrooms,
@@ -57,6 +92,8 @@ export const AulaView: React.FC<AulaViewProps> = ({
   const [filterQuery, setFilterQuery] = useState<string>('');
   const [selectedBuildingFilter, setSelectedBuildingFilter] = useState<string>('ALL'); // 'ALL' or 'E-21', etc.
   const [showBuildingProfessors, setShowBuildingProfessors] = useState<boolean>(false);
+  const [chartViewMode, setChartViewMode] = useState<'weekly' | 'daily'>('weekly');
+  const [isChartExpanded, setIsChartExpanded] = useState<boolean>(true);
 
   React.useEffect(() => {
     if (selectedEntity) {
@@ -157,9 +194,471 @@ export const AulaView: React.FC<AulaViewProps> = ({
     };
   }, [roomSessions, roomDetails]);
 
+  // ==========================================
+  // RECHARTS: Weekly Occupancy by Building
+  // ==========================================
+  const buildingOccupancyList = useMemo(() => {
+    // Filter physical sessions (exclude virtual, field trips, etc.)
+    const physicalSessions = sessions.filter(s =>
+      s.aula &&
+      s.aula !== 'Sin Aula Asignada' &&
+      s.aula !== 'VIR' &&
+      !s.aula.toUpperCase().includes('CAMPO') &&
+      WEEKDAYS.includes(s.dia)
+    );
+
+    return CAMPUS_BUILDINGS.filter(b => b.id !== 'VIRTUAL').map(b => {
+      // Collect all physical rooms associated with this building
+      const bRooms = new Set<string>(b.rooms.map(r => r.toUpperCase()));
+      for (const r of classrooms) {
+        if (r !== 'Sin Aula Asignada' && r !== 'VIR' && !r.toUpperCase().includes('CAMPO')) {
+          const detail = getClassroomDetails(r);
+          if (detail.buildingId === b.id || detail.buildingNumber === b.number) {
+            bRooms.add(r.toUpperCase());
+          }
+        }
+      }
+
+      const roomCount = bRooms.size;
+      const weeklyCapacityMin = roomCount * WEEKLY_MINUTES_PER_ROOM;
+
+      // Filter sessions belonging to this building's rooms
+      const buildingSessions = physicalSessions.filter(s => 
+        bRooms.has(s.aula.toUpperCase()) || 
+        getClassroomDetails(s.aula).buildingId === b.id
+      );
+
+      let totalOccupiedMin = 0;
+      const dayStats: Record<string, { minutes: number; hours: number; percentage: number }> = {
+        'Lunes': { minutes: 0, hours: 0, percentage: 0 },
+        'Martes': { minutes: 0, hours: 0, percentage: 0 },
+        'Miércoles': { minutes: 0, hours: 0, percentage: 0 },
+        'Jueves': { minutes: 0, hours: 0, percentage: 0 },
+        'Viernes': { minutes: 0, hours: 0, percentage: 0 }
+      };
+
+      for (const s of buildingSessions) {
+        const start = Math.max(DAY_START_MINUTES, s.startMinutes);
+        const end = Math.min(DAY_END_MINUTES, s.endMinutes);
+        const dur = Math.max(0, end - start);
+        totalOccupiedMin += dur;
+
+        if (dayStats[s.dia]) {
+          dayStats[s.dia].minutes += dur;
+        }
+      }
+
+      const dayCapacityMin = roomCount * OPERATING_MINUTES_PER_DAY;
+      for (const day of WEEKDAYS) {
+        const dMin = dayStats[day].minutes;
+        dayStats[day].hours = +(dMin / 60).toFixed(1);
+        dayStats[day].percentage = dayCapacityMin > 0 ? Math.min(100, Math.round((dMin / dayCapacityMin) * 100)) : 0;
+      }
+
+      const weeklyPercentage = weeklyCapacityMin > 0 ? Math.min(100, Math.round((totalOccupiedMin / weeklyCapacityMin) * 100)) : 0;
+      const occupiedHours = +(totalOccupiedMin / 60).toFixed(1);
+      const capacityHours = roomCount * WEEKLY_HOURS_PER_ROOM;
+
+      // Determine peak day
+      let peakDay = 'Lunes';
+      let peakDayMin = 0;
+      for (const day of WEEKDAYS) {
+        if (dayStats[day].minutes > peakDayMin) {
+          peakDayMin = dayStats[day].minutes;
+          peakDay = day;
+        }
+      }
+
+      return {
+        buildingId: b.id,
+        name: b.id,
+        fullName: b.name,
+        shortName: b.id,
+        roomCount,
+        rooms: Array.from(bRooms),
+        weeklyCapacityMin,
+        totalOccupiedMin,
+        occupiedHours,
+        capacityHours,
+        weeklyPercentage,
+        peakDay,
+        dayStats,
+        Lunes: dayStats['Lunes'].percentage,
+        Martes: dayStats['Martes'].percentage,
+        Miércoles: dayStats['Miércoles'].percentage,
+        Jueves: dayStats['Jueves'].percentage,
+        Viernes: dayStats['Viernes'].percentage
+      };
+    }).filter(b => b.roomCount > 0);
+  }, [sessions, classrooms]);
+
+  // Overall building occupancy metrics
+  const occupancyHighlights = useMemo(() => {
+    if (buildingOccupancyList.length === 0) return null;
+
+    const sorted = [...buildingOccupancyList].sort((a, b) => b.weeklyPercentage - a.weeklyPercentage);
+    const mostOccupied = sorted[0];
+    const leastOccupied = sorted[sorted.length - 1];
+
+    let totalCap = 0;
+    let totalOcc = 0;
+    for (const b of buildingOccupancyList) {
+      totalCap += b.weeklyCapacityMin;
+      totalOcc += b.totalOccupiedMin;
+    }
+    const campusAvg = totalCap > 0 ? Math.round((totalOcc / totalCap) * 100) : 0;
+
+    return {
+      mostOccupied,
+      leastOccupied,
+      campusAvg,
+      buildingCount: buildingOccupancyList.length
+    };
+  }, [buildingOccupancyList]);
+
   return (
     <div className="space-y-6">
       
+      {/* Visualización Recharts: Porcentaje de Ocupación Semanal por Edificio */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        
+        {/* Chart Header Bar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 via-white to-cyan-50/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-900 text-cyan-300 flex items-center justify-center shrink-0 shadow-xs">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-slate-900 font-display flex items-center gap-2">
+                  <span>Porcentaje de Ocupación Semanal por Edificio</span>
+                </h3>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-mono">
+                  Recharts • 07:00 a 21:00 h
+                </span>
+                {selectedBuildingFilter !== 'ALL' && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-white font-mono animate-in fade-in">
+                    Filtro activo: {selectedBuildingFilter}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Capacidad utilizada por cada inmueble del campus FCM durante la semana (haz clic en una barra para filtrar).
+              </p>
+            </div>
+          </div>
+
+          {/* Mode Controls & Collapse Button */}
+          <div className="flex items-center gap-2 flex-wrap self-end md:self-auto">
+            {/* Toggle View Mode */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setChartViewMode('weekly')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  chartViewMode === 'weekly'
+                    ? 'bg-white text-cyan-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Ver porcentaje promedio acumulado de toda la semana"
+              >
+                % Semanal Global
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartViewMode('daily')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  chartViewMode === 'daily'
+                    ? 'bg-white text-cyan-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Ver desglose comparativo de Lunes a Viernes"
+              >
+                Desglose Diario (L-V)
+              </button>
+            </div>
+
+            {/* Expand / Collapse Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsChartExpanded(!isChartExpanded)}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              title={isChartExpanded ? "Minimizar gráfico" : "Expandir gráfico"}
+              aria-label="Toggle Gráfico"
+            >
+              {isChartExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Chart Content Area */}
+        {isChartExpanded && (
+          <div className="p-4 sm:p-5 space-y-4">
+            
+            {/* Chart Legend & Status Thresholds */}
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="font-semibold text-slate-700">Nivel de saturación semanal:</span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                  &ge; 50% Alta Demanda
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  35% &ndash; 49% Moderada
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                  &lt; 35% Alta Disponibilidad
+                </span>
+              </div>
+
+              <div className="text-[11px] text-slate-400 italic">
+                * Calculado sobre 70 hrs operativas/semana por aula (07:00 a 21:00 h).
+              </div>
+            </div>
+
+            {/* Recharts Bar Chart */}
+            <div className="w-full h-72 min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                {chartViewMode === 'weekly' ? (
+                  <BarChart
+                    data={buildingOccupancyList}
+                    margin={{ top: 15, right: 10, left: -10, bottom: 25 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                      interval={0}
+                      angle={-15}
+                      textAnchor="end"
+                    />
+                    <YAxis
+                      unit="%"
+                      domain={[0, 100]}
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload || !payload.length) return null;
+                        const bData = buildingOccupancyList.find(b => b.name === label);
+                        if (!bData) return null;
+
+                        const isSelected = selectedBuildingFilter === bData.buildingId;
+                        return (
+                          <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-xl border border-slate-800 text-xs space-y-2 max-w-xs">
+                            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
+                              <span className="font-bold text-sm text-cyan-300">{bData.fullName}</span>
+                              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+                                {bData.buildingId}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1 text-slate-300">
+                              <div className="flex justify-between">
+                                <span>Aulas asignadas:</span>
+                                <span className="font-bold text-white font-mono">{bData.roomCount} aulas</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Horas de clase semanales:</span>
+                                <span className="font-bold font-mono text-cyan-300">{bData.occupiedHours} h de {bData.capacityHours} h</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Ocupación semanal:</span>
+                                <span className="font-extrabold font-mono text-emerald-400 text-sm">{bData.weeklyPercentage}%</span>
+                              </div>
+                              <div className="flex justify-between text-amber-300">
+                                <span>Día con mayor uso:</span>
+                                <span className="font-semibold">{bData.peakDay} ({bData.dayStats[bData.peakDay]?.percentage}%)</span>
+                              </div>
+                            </div>
+
+                            <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-cyan-400" />
+                              <span>{isSelected ? '✓ Edificio actualmente filtrado' : '👉 Haz clic en la barra para filtrar sus aulas'}</span>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <ReferenceLine
+                      y={50}
+                      stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      label={{ value: '50% Saturación', position: 'top', fill: '#ef4444', fontSize: 10, fontWeight: 700 }}
+                    />
+                    <Bar
+                      dataKey="weeklyPercentage"
+                      name="% Ocupación Semanal"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={42}
+                      onClick={(data: any) => {
+                        if (data && data.buildingId) {
+                          handleSelectBuilding(data.buildingId);
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {buildingOccupancyList.map((entry, index) => {
+                        const isSelected = selectedBuildingFilter === entry.buildingId;
+                        let barColor = '#10b981'; // Emerald 500
+                        if (entry.weeklyPercentage >= 50) barColor = '#ef4444'; // Rose 500
+                        else if (entry.weeklyPercentage >= 35) barColor = '#f59e0b'; // Amber 500
+
+                        return (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={isSelected ? '#0891b2' : barColor}
+                            stroke={isSelected ? '#0e7490' : 'none'}
+                            strokeWidth={isSelected ? 2 : 0}
+                            opacity={selectedBuildingFilter !== 'ALL' && !isSelected ? 0.45 : 1}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <BarChart
+                    data={buildingOccupancyList}
+                    margin={{ top: 15, right: 10, left: -10, bottom: 25 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                      interval={0}
+                      angle={-15}
+                      textAnchor="end"
+                    />
+                    <YAxis
+                      unit="%"
+                      domain={[0, 100]}
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload || !payload.length) return null;
+                        const bData = buildingOccupancyList.find(b => b.name === label);
+                        return (
+                          <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-xl border border-slate-800 text-xs space-y-2 max-w-xs">
+                            <div className="font-bold text-sm text-cyan-300">{bData?.fullName || label}</div>
+                            <div className="text-[11px] text-slate-300">
+                              Ocupación diaria por aula ({bData?.roomCount} aulas):
+                            </div>
+                            <div className="space-y-1 pt-1 border-t border-slate-800">
+                              {payload.map((entry: any) => (
+                                <div key={entry.name} className="flex items-center justify-between gap-4">
+                                  <span className="flex items-center gap-1.5" style={{ color: entry.color }}>
+                                    <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: entry.color }} />
+                                    {entry.name}:
+                                  </span>
+                                  <span className="font-mono font-bold text-white">
+                                    {entry.value}% ({bData?.dayStats[entry.name]?.hours} h)
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: 11, paddingTop: 10 }}
+                      iconSize={10}
+                    />
+                    {WEEKDAYS.map(day => (
+                      <Bar
+                        key={day}
+                        dataKey={day}
+                        fill={DAY_COLORS[day]}
+                        radius={[3, 3, 0, 0]}
+                        maxBarSize={12}
+                        onClick={(data: any) => {
+                          if (data && data.buildingId) {
+                            handleSelectBuilding(data.buildingId);
+                          }
+                        }}
+                        className="cursor-pointer"
+                      />
+                    ))}
+                  </BarChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+
+            {/* Quick KPI Highlights Summary Bar */}
+            {occupancyHighlights && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+                
+                <div 
+                  onClick={() => handleSelectBuilding(occupancyHighlights.mostOccupied.buildingId)}
+                  className="p-3 rounded-xl bg-rose-50/70 border border-rose-200/80 cursor-pointer hover:bg-rose-100/70 transition-colors"
+                  title="Haz clic para filtrar este edificio"
+                >
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-rose-700">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Mayor Ocupación</span>
+                  </div>
+                  <div className="text-sm font-black text-rose-950 font-display mt-0.5 truncate">
+                    {occupancyHighlights.mostOccupied.name} — {occupancyHighlights.mostOccupied.weeklyPercentage}%
+                  </div>
+                  <div className="text-[11px] text-rose-800">
+                    {occupancyHighlights.mostOccupied.occupiedHours} h clase / semana
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => handleSelectBuilding(occupancyHighlights.leastOccupied.buildingId)}
+                  className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/70 transition-colors"
+                  title="Haz clic para filtrar este edificio"
+                >
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-emerald-700">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Mayor Disponibilidad</span>
+                  </div>
+                  <div className="text-sm font-black text-emerald-950 font-display mt-0.5 truncate">
+                    {occupancyHighlights.leastOccupied.name} — {occupancyHighlights.leastOccupied.weeklyPercentage}%
+                  </div>
+                  <div className="text-[11px] text-emerald-800">
+                    {occupancyHighlights.leastOccupied.roomCount} aulas con holgura
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-cyan-50/70 border border-cyan-200/80">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-cyan-800">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    <span>Promedio Campus FCM</span>
+                  </div>
+                  <div className="text-sm font-black text-cyan-950 font-display mt-0.5 font-mono">
+                    {occupancyHighlights.campusAvg}% semanal
+                  </div>
+                  <div className="text-[11px] text-cyan-900">
+                    Uso regular de espacios
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-700">
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Edificios Monitoreados</span>
+                  </div>
+                  <div className="text-sm font-black text-slate-900 font-display mt-0.5 font-mono">
+                    {occupancyHighlights.buildingCount} Inmuebles
+                  </div>
+                  <div className="text-[11px] text-slate-600">
+                    FCM UABC Ensenada
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          </div>
+        )}
+
+      </div>
+
       {/* Building Filter Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -229,6 +728,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
 
           {CAMPUS_BUILDINGS.map(b => {
             const isSelected = selectedBuildingFilter === b.id;
+            const bData = buildingOccupancyList.find(item => item.buildingId === b.id);
             return (
               <button
                 key={b.id}
@@ -236,15 +736,28 @@ export const AulaView: React.FC<AulaViewProps> = ({
                 onClick={() => handleSelectBuilding(b.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-cyan-700 text-white shadow-md shadow-cyan-700/20'
+                    ? 'bg-cyan-700 text-white shadow-md shadow-cyan-700/20 ring-2 ring-cyan-500/50'
                     : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
                 }`}
               >
                 <span>{b.id}</span>
+                {bData && (
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                    isSelected 
+                      ? 'bg-white/20 text-white' 
+                      : bData.weeklyPercentage >= 50
+                      ? 'bg-rose-100 text-rose-700'
+                      : bData.weeklyPercentage >= 35
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {bData.weeklyPercentage}%
+                  </span>
+                )}
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
                   isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-600'
                 }`}>
-                  {b.rooms.length}
+                  {b.rooms.length} sal.
                 </span>
               </button>
             );
