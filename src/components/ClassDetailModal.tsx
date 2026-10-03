@@ -205,7 +205,11 @@ export const ClassDetailModal: React.FC<ClassDetailModalProps> = ({ session, onC
                   {session.inscritos !== undefined && session.inscritos !== null ? session.inscritos : '—'}
                 </p>
                 <span className="text-[9.5px] text-slate-500">
-                  {session.inscritos ? 'alumnos en clase' : 'Sin registro'}
+                  {session.inscritos 
+                    ? 'alumnos en clase' 
+                    : (session.source?.includes('Posgrado') || session.source?.includes('Base 2') || session.programa?.toUpperCase().includes('DOCTORADO') || session.programa?.toUpperCase().includes('MAESTR'))
+                    ? 'Matrícula Posgrado' 
+                    : 'Sin registro SUE'}
                 </span>
               </div>
 

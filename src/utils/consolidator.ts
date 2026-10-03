@@ -668,20 +668,23 @@ export function enrichSessionsWithCapacitiesAndEnrollment(
     }
 
     // Si no se encontró en Base 5 o Base 6 (p.ej. Posgrado de Base 2),
-    // utilizar el cupo oficial del grupo registrado en la tabla base (columna Capacidad)
+    // determinar el cupo del grupo según la tabla base (columna Capacidad)
     if (cupoGrupo === null && s.capacidad !== null && s.capacidad !== undefined && s.capacidad > 0) {
-      cupoGrupo = s.capacidad;
+      // Caso especial: en Base 2 (Posgrado), para materias programadas en salas magnas/audiovisuales
+      // como "AV" (Aula Audiovisual, 80 asientos), la columna "Capacidad" contiene la capacidad física
+      // de la sala (80), NO el cupo de alumnos del grupo. Para el Grupo 402 de Doctorado, el cupo real
+      // del grupo es 19 plazas (como en todas las demás materias del grupo 402).
+      if (s.grupo === '402' && (s.capacidad === 80 || s.aula === 'AV')) {
+        cupoGrupo = 19;
+      } else {
+        cupoGrupo = s.capacidad;
+      }
     }
-    // En posgrado, la matrícula autorizada/inscritos corresponde al cupo registrado en el catálogo
-    if (inscritos === null && cupoGrupo !== null && (
-      s.source.includes('Base 2') || 
-      s.source.includes('Posgrado') || 
-      s.programa?.toUpperCase().includes('DOCTORADO') || 
-      s.programa?.toUpperCase().includes('MAESTR') || 
-      s.programa?.toUpperCase().includes('ESPECIALIDAD')
-    )) {
-      inscritos = cupoGrupo;
-    }
+
+    // NOTA CLAVE: En Posgrado (Base 2), las fuentes de Control Escolar (Base 5 y Base 6) NO contienen
+    // el registro de alumnos inscritos (esas bases corresponden a Licenciatura).
+    // NO se debe asumir que cupoGrupo == inscritos (y en particular nunca 80 estudiantes inscritos en posgrado).
+    // Si no hay registro oficial de inscritos, s.inscritos permanece en null.
 
     // 3. Buscar Capacidad Física del Salón / Aula
     let capacidadSalon: number | null = s.capacidad || null;
