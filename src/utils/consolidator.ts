@@ -231,7 +231,9 @@ export function applyCorrections(
           if (timeActual) {
             const sStart = timeToMinutes(timeActual.start);
             const sEnd = timeToMinutes(timeActual.end);
-            matchTime = s.startMinutes < sEnd + 15 && s.endMinutes > sStart - 15;
+            const overlapStart = Math.max(s.startMinutes, sStart);
+            const overlapEnd = Math.min(s.endMinutes, sEnd);
+            matchTime = (overlapEnd - overlapStart) >= 20 || Math.abs(s.startMinutes - sStart) <= 15;
           }
           if (matchDay && matchTime && matchTipo) {
             matchedIndices.push(i);

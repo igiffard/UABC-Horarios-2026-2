@@ -349,6 +349,7 @@ export const CAMPUS_BUILDINGS: CampusBuildingInfo[] = [
     rooms: ['LCA', 'LEO', 'CRU', 'SIS', 'FIS', 'DIE'],
     floors: {
       plantaBaja: [
+        { code: 'DIE', name: 'Sala DIE (Docencia / Ingeniería)' },
         { code: 'LCA', name: 'Lab. de Cultivos de Apoyo' },
         { code: 'LEO', name: 'Laboratorio de Especies Ornamentales' },
         { code: 'CRU', name: 'Laboratorio de Crustáceos' },
