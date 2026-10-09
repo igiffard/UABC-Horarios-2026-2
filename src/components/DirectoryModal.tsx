@@ -267,7 +267,7 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
       
       {/* Modal Card */}
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl h-[90vh] max-h-[820px] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-5xl h-[90vh] max-h-[820px] flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="px-6 py-5 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 text-white flex items-center justify-between border-b border-slate-700">
@@ -299,7 +299,7 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
         </div>
 
         {/* Category Tabs */}
-        <div className="bg-slate-50 border-b border-slate-200 px-6 pt-3 pb-0">
+        <div className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 px-6 pt-3 pb-0">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
             
             {/* Profesores Tab */}
@@ -311,14 +311,14 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                 activeCategory === 'profesores'
-                  ? 'border-cyan-700 text-cyan-950 bg-white shadow-xs font-bold'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'border-cyan-700 dark:border-cyan-400 text-cyan-950 dark:text-cyan-200 bg-white dark:bg-slate-900 shadow-xs font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <User className="w-4 h-4 text-cyan-600" />
+              <User className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Profesores</span>
               <span className={`text-[11px] px-2 py-0.2 rounded-full ${
-                activeCategory === 'profesores' ? 'bg-cyan-100 text-cyan-900' : 'bg-slate-200 text-slate-700'
+                activeCategory === 'profesores' ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {counts.profesores}
               </span>
@@ -333,14 +333,14 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                 activeCategory === 'aulas'
-                  ? 'border-cyan-700 text-cyan-950 bg-white shadow-xs font-bold'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'border-cyan-700 dark:border-cyan-400 text-cyan-950 dark:text-cyan-200 bg-white dark:bg-slate-900 shadow-xs font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <Building2 className="w-4 h-4 text-cyan-600" />
+              <Building2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Aulas y Espacios</span>
               <span className={`text-[11px] px-2 py-0.2 rounded-full ${
-                activeCategory === 'aulas' ? 'bg-cyan-100 text-cyan-900' : 'bg-slate-200 text-slate-700'
+                activeCategory === 'aulas' ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {counts.aulas}
               </span>
@@ -355,14 +355,14 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                 activeCategory === 'asignaturas'
-                  ? 'border-cyan-700 text-cyan-950 bg-white shadow-xs font-bold'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'border-cyan-700 dark:border-cyan-400 text-cyan-950 dark:text-cyan-200 bg-white dark:bg-slate-900 shadow-xs font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <BookOpen className="w-4 h-4 text-cyan-600" />
+              <BookOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Asignaturas / Materias</span>
               <span className={`text-[11px] px-2 py-0.2 rounded-full ${
-                activeCategory === 'asignaturas' ? 'bg-cyan-100 text-cyan-900' : 'bg-slate-200 text-slate-700'
+                activeCategory === 'asignaturas' ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {counts.asignaturas}
               </span>
@@ -377,14 +377,14 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                 activeCategory === 'grupos'
-                  ? 'border-cyan-700 text-cyan-950 bg-white shadow-xs font-bold'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'border-cyan-700 dark:border-cyan-400 text-cyan-950 dark:text-cyan-200 bg-white dark:bg-slate-900 shadow-xs font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <Users className="w-4 h-4 text-cyan-600" />
+              <Users className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Grupos Estudiantiles</span>
               <span className={`text-[11px] px-2 py-0.2 rounded-full ${
-                activeCategory === 'grupos' ? 'bg-cyan-100 text-cyan-900' : 'bg-slate-200 text-slate-700'
+                activeCategory === 'grupos' ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {counts.grupos}
               </span>
@@ -394,7 +394,7 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
         </div>
 
         {/* Filter Controls (Search + Letter index) */}
-        <div className="p-4 bg-slate-50/70 border-b border-slate-200 space-y-3">
+        <div className="p-4 bg-slate-50/70 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 space-y-3">
           
           {/* Search bar */}
           <div className="relative">
@@ -413,13 +413,13 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                   ? 'Filtrar por nombre de materia, clave UA o docente...'
                   : 'Filtrar por número de grupo o programa educativo...'
               }
-              className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 shadow-xs"
+              className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 shadow-xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-md"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -436,8 +436,8 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
               onClick={() => setSelectedLetter('TODOS')}
               className={`px-2.5 py-1 rounded-lg font-bold text-xs shrink-0 transition-all cursor-pointer ${
                 selectedLetter === 'TODOS'
-                  ? 'bg-cyan-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+                  ? 'bg-cyan-900 dark:bg-cyan-700 text-white shadow-xs'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               Todos ({directoryData[activeCategory]?.length || 0})
@@ -449,8 +449,8 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                 onClick={() => setSelectedLetter(letter)}
                 className={`w-7 h-7 flex items-center justify-center rounded-lg font-bold text-xs shrink-0 transition-all cursor-pointer ${
                   selectedLetter === letter
-                    ? 'bg-cyan-900 text-white shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                    ? 'bg-cyan-900 dark:bg-cyan-700 text-white shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                 }`}
               >
                 {letter}
@@ -461,14 +461,14 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
         </div>
 
         {/* Directory Items Grid */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/60">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/60 dark:bg-slate-950/60">
           
           {filteredList.length === 0 ? (
             <div className="text-center py-16 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
                 <Search className="w-6 h-6" />
               </div>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 No se encontraron resultados para "{searchQuery}"
               </p>
               <button
@@ -493,32 +493,32 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                     <div
                       key={prof.name}
                       onClick={() => handleSelect('profesores', prof.name)}
-                      className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-cyan-500 dark:hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display line-clamp-2">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-cyan-800 dark:group-hover:text-cyan-300 transition-colors font-display line-clamp-2">
                             {prof.name}
                           </h3>
-                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 border border-cyan-200 shrink-0">
+                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-cyan-50 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 shrink-0">
                             {formatDurationHours(prof.totalMinutes)}
                           </span>
                         </div>
 
                         {prof.subjects.size > 0 && (
-                          <p className="text-xs text-slate-500 line-clamp-2">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                             {Array.from(prof.subjects).join(', ')}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="flex items-center gap-1 font-medium text-slate-600">
-                          <BookOpen className="w-3 h-3 text-cyan-600" />
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-400">
+                          <BookOpen className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
                           {prof.subjects.size} {prof.subjects.size === 1 ? 'materia' : 'materias'}
                         </span>
 
-                        <span className="flex items-center gap-1 text-cyan-700 font-semibold group-hover:translate-x-0.5 transition-transform">
+                        <span className="flex items-center gap-1 text-cyan-700 dark:text-cyan-400 font-semibold group-hover:translate-x-0.5 transition-transform">
                           <span>Ver Horario</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -536,35 +536,35 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                     <div
                       key={room.name}
                       onClick={() => handleSelect('aulas', room.name)}
-                      className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-cyan-500 dark:hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-xl bg-cyan-100 text-cyan-900 font-bold font-mono text-xs flex items-center justify-center border border-cyan-200 shrink-0">
+                            <span className="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 font-bold font-mono text-xs flex items-center justify-center border border-cyan-200 dark:border-cyan-800 shrink-0">
                               {room.name.slice(0, 3)}
                             </span>
-                            <h3 className="text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-cyan-800 dark:group-hover:text-cyan-300 transition-colors font-display">
                               Aula {room.name}
                             </h3>
                           </div>
-                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200 shrink-0">
+                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shrink-0">
                             {formatDurationHours(room.totalMinutes)}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                           {room.building && <span>Edificio {room.building}</span>}
                           {room.capacity && <span>• Cap. {room.capacity} est.</span>}
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="font-medium text-slate-600">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="font-medium text-slate-600 dark:text-slate-400">
                           {room.subjects.size} materias asignadas
                         </span>
 
-                        <span className="flex items-center gap-1 text-cyan-700 font-semibold group-hover:translate-x-0.5 transition-transform">
+                        <span className="flex items-center gap-1 text-cyan-700 dark:text-cyan-400 font-semibold group-hover:translate-x-0.5 transition-transform">
                           <span>Ver Horario</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -582,33 +582,33 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                     <div
                       key={subj.name}
                       onClick={() => handleSelect('asignaturas', subj.name)}
-                      className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-cyan-500 dark:hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display line-clamp-2">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-cyan-800 dark:group-hover:text-cyan-300 transition-colors font-display line-clamp-2">
                             {subj.name}
                           </h3>
                           {subj.claveUA && (
-                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                               {subj.claveUA}
                             </span>
                           )}
                         </div>
 
                         {subj.professors.size > 0 && (
-                          <p className="text-xs text-slate-500 line-clamp-1">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                             Docente(s): {Array.from(subj.professors).join(', ')}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="font-medium text-slate-600">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="font-medium text-slate-600 dark:text-slate-400">
                           {subj.groups.size} {subj.groups.size === 1 ? 'grupo' : 'grupos'} • {formatDurationHours(subj.totalMinutes)}
                         </span>
 
-                        <span className="flex items-center gap-1 text-cyan-700 font-semibold group-hover:translate-x-0.5 transition-transform">
+                        <span className="flex items-center gap-1 text-cyan-700 dark:text-cyan-400 font-semibold group-hover:translate-x-0.5 transition-transform">
                           <span>Ver Horario</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -626,31 +626,31 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
                     <div
                       key={grp.name}
                       onClick={() => handleSelect('grupos', grp.name)}
-                      className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-cyan-500 dark:hover:border-cyan-500 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display">
+                          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-cyan-800 dark:group-hover:text-cyan-300 transition-colors font-display">
                             Grupo {grp.name}
                           </h3>
-                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200 shrink-0">
+                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
                             {formatDurationHours(grp.totalMinutes)}
                           </span>
                         </div>
 
                         {grp.programs.size > 0 && (
-                          <p className="text-xs text-slate-500 line-clamp-1">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                             {Array.from(grp.programs).join(' • ')}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="font-medium text-slate-600">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="font-medium text-slate-600 dark:text-slate-400">
                           {grp.subjects.size} asignaturas
                         </span>
 
-                        <span className="flex items-center gap-1 text-cyan-700 font-semibold group-hover:translate-x-0.5 transition-transform">
+                        <span className="flex items-center gap-1 text-cyan-700 dark:text-cyan-400 font-semibold group-hover:translate-x-0.5 transition-transform">
                           <span>Ver Horario</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -666,12 +666,12 @@ export const DirectoryModal: React.FC<DirectoryModalProps> = ({
         </div>
 
         {/* Footer info */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <span>Mostrando {filteredList.length} elementos en {activeCategory}</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold text-slate-700 transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
           >
             Cerrar
           </button>

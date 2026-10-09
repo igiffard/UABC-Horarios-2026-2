@@ -126,7 +126,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[95vh] overflow-hidden">
+      <div className="relative w-full max-w-6xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[95vh] overflow-hidden transition-colors duration-200">
         
         {/* Top Header */}
         <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-800 shrink-0">
@@ -179,12 +179,12 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
         </div>
 
         {/* Mobile Tab Switcher */}
-        <div className="sm:hidden bg-slate-100 p-2 flex border-b border-slate-200">
+        <div className="sm:hidden bg-slate-100 dark:bg-slate-800 p-2 flex border-b border-slate-200 dark:border-slate-700">
           <button
             type="button"
             onClick={() => setActiveTab('map')}
             className={`flex-1 py-1.5 rounded-lg text-xs font-semibold text-center ${
-              activeTab === 'map' ? 'bg-cyan-700 text-white shadow-xs' : 'text-slate-600'
+              activeTab === 'map' ? 'bg-cyan-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             Mapa del Campus
@@ -193,7 +193,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
             type="button"
             onClick={() => setActiveTab('directory')}
             className={`flex-1 py-1.5 rounded-lg text-xs font-semibold text-center ${
-              activeTab === 'directory' ? 'bg-cyan-700 text-white shadow-xs' : 'text-slate-600'
+              activeTab === 'directory' ? 'bg-cyan-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             Directorio de Claves
@@ -206,11 +206,11 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
             <div className="p-4 sm:p-6 space-y-6">
               
               {/* Top Banner Guide with Instant Room Finder */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-xs text-slate-700 dark:text-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Info className="w-4 h-4 text-cyan-600 shrink-0" />
+                  <Info className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
                   <span>
-                    <strong>Explorador del Campus:</strong> Haz clic en cualquier edificio del mapa o busca cualquier aula por clave para localizarla.
+                    <strong className="text-slate-900 dark:text-slate-100">Explorador del Campus:</strong> Haz clic en cualquier edificio del mapa o busca cualquier aula por clave para localizarla.
                   </span>
                 </div>
 
@@ -223,13 +223,13 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       placeholder="Localizar aula (ej. P5, Fermán)..."
                       value={mapSearchTerm}
                       onChange={(e) => handleMapSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs placeholder:text-slate-400 focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500"
+                      className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500"
                     />
                     {mapSearchTerm && (
                       <button
                         type="button"
                         onClick={() => handleMapSearch('')}
-                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-[10px]"
+                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px]"
                       >
                         ✕
                       </button>
@@ -237,8 +237,8 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-semibold text-slate-500">Edificios:</span>
-                    {['E-21', 'E-18', 'E-17', 'E-16', 'E-14', 'E-15', 'E-25', 'E-56'].map(id => (
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Edificios:</span>
+                    {['E-21', 'E-18', 'E-17', 'E-16', 'E-14', 'E-15', 'E-25', 'E-40', 'E-41', 'E-56'].map(id => (
                       <button
                         key={id}
                         type="button"
@@ -249,7 +249,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                         className={`px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
                           selectedBuildingId === id 
                             ? 'bg-cyan-700 text-white shadow-xs' 
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                            : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         {id}
@@ -506,6 +506,27 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                         <text x="15" y="448" fill="#fecaca" fontSize="6" textAnchor="middle">Moluscos</text>
                       </g>
 
+                      {/* E-40 (Sala DID) */}
+                      <g 
+                        className="cursor-pointer transition-transform hover:scale-105"
+                        onClick={() => setSelectedBuildingId('E-40')}
+                        onMouseEnter={() => setHoveredBuilding('E-40')}
+                        onMouseLeave={() => setHoveredBuilding(null)}
+                      >
+                        <rect
+                          x="40"
+                          y="388"
+                          width="25"
+                          height="28"
+                          rx="4"
+                          fill={selectedBuildingId === 'E-40' ? '#38bdf8' : '#b91c1c'}
+                          stroke={selectedBuildingId === 'E-40' ? '#ffffff' : '#f87171'}
+                          strokeWidth={selectedBuildingId === 'E-40' ? 2.5 : 1}
+                        />
+                        <text x="52" y="402" fill="white" fontSize="8" fontWeight="bold" textAnchor="middle">E-40</text>
+                        <text x="52" y="411" fill="#fecaca" fontSize="5.5" textAnchor="middle">DID</text>
+                      </g>
+
                       {/* E-41 (Sistemas y Crustáceos) */}
                       <g 
                         className="cursor-pointer transition-transform hover:scale-105"
@@ -651,19 +672,19 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                 <div className="lg:col-span-5 space-y-4">
                   
                   {/* Selected Building Details Box */}
-                  <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+                  <div className="bg-slate-50 dark:bg-slate-800/70 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
                     
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-100 text-cyan-800 border border-cyan-200">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-100 dark:bg-cyan-950/70 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                             {selectedBuilding.id}
                           </span>
-                          <span className="text-xs text-slate-500 font-mono">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                             {selectedBuilding.rooms.length} aulas registradas
                           </span>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900 mt-1 font-display">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1 font-display">
                           {selectedBuilding.title}
                         </h3>
                       </div>
@@ -675,7 +696,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                             onSelectBuilding(selectedBuilding.number);
                             onClose();
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-bold transition-colors flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+                          className="px-3 py-1.5 rounded-lg bg-cyan-700 hover:bg-cyan-800 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white text-xs font-bold transition-colors flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
                         >
                           <span>Ver en Aulas</span>
                           <ExternalLink className="w-3 h-3" />
@@ -683,21 +704,21 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       )}
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                       {selectedBuilding.description}
                     </p>
 
                     {/* Breakdown by Floors */}
-                    <div className="space-y-3 pt-2 border-t border-slate-200">
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-cyan-700" />
+                    <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                         <span>Distribución de Aulas y Espacios</span>
                       </h4>
 
                       {/* Planta Baja */}
                       {selectedBuilding.floors.plantaBaja && selectedBuilding.floors.plantaBaja.length > 0 && (
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Planta Baja:</span>
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Planta Baja:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {selectedBuilding.floors.plantaBaja.map(r => {
                               const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
@@ -707,19 +728,19 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                                   onClick={() => onSelectRoom?.(r.code)}
                                   className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
                                     isMatch
-                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                      ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-500 ring-2 ring-amber-300 dark:ring-amber-600 shadow-xs'
+                                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/30'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1">
-                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900 dark:text-amber-300' : 'text-cyan-900 dark:text-cyan-300'}`}>{r.code}</span>
                                     {isMatch && (
-                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200">
                                         Aquí
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                  <span className="text-slate-600 dark:text-slate-400 block text-[11px] leading-tight truncate" title={r.name}>
                                     {r.name}
                                   </span>
                                 </div>
@@ -732,7 +753,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       {/* Planta Alta */}
                       {selectedBuilding.floors.plantaAlta && selectedBuilding.floors.plantaAlta.length > 0 && (
                         <div className="space-y-1 pt-1">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Planta Alta:</span>
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Planta Alta:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {selectedBuilding.floors.plantaAlta.map(r => {
                               const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
@@ -742,19 +763,19 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                                   onClick={() => onSelectRoom?.(r.code)}
                                   className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
                                     isMatch
-                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                      ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-500 ring-2 ring-amber-300 dark:ring-amber-600 shadow-xs'
+                                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/30'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1">
-                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900 dark:text-amber-300' : 'text-cyan-900 dark:text-cyan-300'}`}>{r.code}</span>
                                     {isMatch && (
-                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200">
                                         Aquí
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                  <span className="text-slate-600 dark:text-slate-400 block text-[11px] leading-tight truncate" title={r.name}>
                                     {r.name}
                                   </span>
                                 </div>
@@ -767,7 +788,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       {/* Parte Posterior / Talleres */}
                       {selectedBuilding.floors.partePosterior && selectedBuilding.floors.partePosterior.length > 0 && (
                         <div className="space-y-1 pt-1">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Parte Posterior / Talleres:</span>
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Parte Posterior / Talleres:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {selectedBuilding.floors.partePosterior.map(r => {
                               const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
@@ -777,19 +798,19 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                                   onClick={() => onSelectRoom?.(r.code)}
                                   className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
                                     isMatch
-                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                      ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-500 ring-2 ring-amber-300 dark:ring-amber-600 shadow-xs'
+                                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/30'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1">
-                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    <span className={`font-bold font-mono ${isMatch ? 'text-amber-900 dark:text-amber-300' : 'text-cyan-900 dark:text-cyan-300'}`}>{r.code}</span>
                                     {isMatch && (
-                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200">
                                         Aquí
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                  <span className="text-slate-600 dark:text-slate-400 block text-[11px] leading-tight truncate" title={r.name}>
                                     {r.name}
                                   </span>
                                 </div>
@@ -802,7 +823,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       {/* Otros Espacios / Piso 2 */}
                       {selectedBuilding.floors.otros && selectedBuilding.floors.otros.length > 0 && (
                         <div className="space-y-1 pt-1">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Piso 2 / Otros Espacios Docentes:</span>
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Piso 2 / Otros Espacios Docentes:</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {selectedBuilding.floors.otros.map(r => {
                               const isMatch = highlightedRoom && r.code.toLowerCase().includes(highlightedRoom.toLowerCase());
@@ -812,19 +833,19 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                                   onClick={() => onSelectRoom?.(r.code)}
                                   className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
                                     isMatch
-                                      ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs'
-                                      : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                                      ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-400 dark:border-amber-500 ring-2 ring-amber-300 dark:ring-amber-600 shadow-xs'
+                                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/30'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1">
-                                    <span className={`font-bold font-mono text-[11px] ${isMatch ? 'text-amber-900' : 'text-cyan-900'}`}>{r.code}</span>
+                                    <span className={`font-bold font-mono text-[11px] ${isMatch ? 'text-amber-900 dark:text-amber-300' : 'text-cyan-900 dark:text-cyan-300'}`}>{r.code}</span>
                                     {isMatch && (
-                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 text-amber-900">
+                                      <span className="text-[9px] font-extrabold uppercase px-1 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200">
                                         Aquí
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-slate-600 block text-[11px] leading-tight truncate" title={r.name}>
+                                  <span className="text-slate-600 dark:text-slate-400 block text-[11px] leading-tight truncate" title={r.name}>
                                     {r.name}
                                   </span>
                                 </div>
@@ -862,7 +883,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
             /* Directory Tab: Full reference list of classrooms with official names */
             <div className="p-4 sm:p-6 space-y-4">
               
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/70 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div className="relative flex-1 max-w-md">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -870,28 +891,28 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                     value={searchDirectoryTerm}
                     onChange={e => setSearchDirectoryTerm(e.target.value)}
                     placeholder="Buscar aula por clave (GEO, LFQ, S1), nombre o edificio..."
-                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                   {searchDirectoryTerm && (
                     <button
                       type="button"
                       onClick={() => setSearchDirectoryTerm('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       ✕
                     </button>
                   )}
                 </div>
 
-                <div className="text-xs text-slate-500">
-                  Mostrando <strong>{filteredDirectory.length}</strong> de {Object.keys(ROOM_CATALOG).length} espacios
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Mostrando <strong className="text-slate-900 dark:text-slate-200">{filteredDirectory.length}</strong> de {Object.keys(ROOM_CATALOG).length} espacios
                 </div>
               </div>
 
               {/* Table of Classrooms */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-                <table className="min-w-full divide-y divide-slate-200 text-xs">
-                  <thead className="bg-slate-900 text-white">
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs">
+                  <thead className="bg-slate-900 dark:bg-slate-950 text-white">
                     <tr>
                       <th className="px-3.5 py-2.5 text-left font-bold uppercase tracking-wider">Clave</th>
                       <th className="px-3.5 py-2.5 text-left font-bold uppercase tracking-wider">Nombre Completo del Aula / Laboratorio</th>
@@ -901,23 +922,23 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                       <th className="px-3.5 py-2.5 text-right font-bold uppercase tracking-wider">Acción</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-100">
+                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredDirectory.map((room) => (
-                      <tr key={room.code} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-3.5 py-2 font-mono font-bold text-cyan-900 text-xs">
+                      <tr key={room.code} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <td className="px-3.5 py-2 font-mono font-bold text-cyan-900 dark:text-cyan-300 text-xs">
                           {room.code}
                         </td>
-                        <td className="px-3.5 py-2 font-medium text-slate-900">
+                        <td className="px-3.5 py-2 font-medium text-slate-900 dark:text-slate-100">
                           {room.name}
                         </td>
-                        <td className="px-3.5 py-2 text-slate-600">
-                          <span className="font-semibold text-slate-800">{room.buildingName}</span>
+                        <td className="px-3.5 py-2 text-slate-600 dark:text-slate-400">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{room.buildingName}</span>
                         </td>
-                        <td className="px-3.5 py-2 text-slate-500">
+                        <td className="px-3.5 py-2 text-slate-500 dark:text-slate-400">
                           {room.floor || 'General'}
                         </td>
                         <td className="px-3.5 py-2">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {room.type}
                           </span>
                         </td>
@@ -928,7 +949,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
                               onSelectRoom?.(room.code);
                               onClose();
                             }}
-                            className="px-2.5 py-1 rounded-md bg-cyan-50 hover:bg-cyan-100 text-cyan-800 font-semibold text-[11px] transition-colors cursor-pointer inline-flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-md bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/80 text-cyan-800 dark:text-cyan-300 font-semibold text-[11px] transition-colors cursor-pointer inline-flex items-center gap-1"
                           >
                             <span>Ver Horario</span>
                             <ExternalLink className="w-3 h-3" />
@@ -945,9 +966,9 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 shrink-0">
+        <div className="bg-slate-50 dark:bg-slate-800/80 px-5 py-3 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">UABC Facultad de Ciencias Marinas</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-200">UABC Facultad de Ciencias Marinas</span>
             <span>•</span>
             <span>Unidad Universitaria Ensenada (Sauzal)</span>
           </div>
@@ -956,7 +977,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold transition-colors cursor-pointer"
+              className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-semibold transition-colors cursor-pointer"
             >
               Cerrar
             </button>

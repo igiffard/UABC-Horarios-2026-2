@@ -123,13 +123,16 @@ export const ROOM_CATALOG: Record<string, CampusRoomInfo> = {
   'SPI': { code: 'SPI', name: 'Sala de Posgrado IIO', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
   'IIO': { code: 'IIO', name: 'Auditorio / Espacio IIO', buildingId: 'E-25', buildingName: 'Edificio 25 (IIO)', buildingNumber: '25', floor: 'Planta Baja', type: 'Aula / Salón' },
 
+  // E-40
+  'DID': { code: 'DID', name: 'Sala DID (Edificio 40)', buildingId: 'E-40', buildingName: 'Edificio 40', buildingNumber: '40', floor: 'Planta Baja', type: 'Aula / Salón' },
+
   // E-41
   'LCA': { code: 'LCA', name: 'Lab. de Cultivos de Apoyo', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Laboratorio' },
   'LEO': { code: 'LEO', name: 'Laboratorio de Especies Ornamentales', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Laboratorio' },
   'CRU': { code: 'CRU', name: 'Laboratorio de Crustáceos', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Laboratorio' },
   'SIS': { code: 'SIS', name: 'Laboratorio de Sistemas', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Laboratorio' },
   'FIS': { code: 'FIS', name: 'Laboratorio de Fisiología', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Laboratorio' },
-  'DIE': { code: 'DIE', name: 'Área de Ingeniería / Docencia', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Aula / Salón' },
+  'DIE': { code: 'DIE', name: 'Área de Ingeniería / Docencia (Sala DIE)', buildingId: 'E-41', buildingName: 'Edificio 41', buildingNumber: '41', floor: 'Planta Baja', type: 'Aula / Salón' },
 
   // E-56
   'TOA': { code: 'TOA', name: 'Salón Totoaba A', buildingId: 'E-56', buildingName: 'Edificio 56', buildingNumber: '56', floor: 'Planta Baja', type: 'Aula / Salón' },
@@ -336,6 +339,23 @@ export const CAMPUS_BUILDINGS: CampusBuildingInfo[] = [
       ]
     },
     mapRect: { x: 80, y: 760, width: 60, height: 55, label: 'E-21', sublabel: 'ESP / GEO' }
+  },
+  {
+    id: 'E-40',
+    number: '40',
+    name: 'Edificio 40 (Sala DID)',
+    title: 'Edificio 40 — Sala DID y Docencia',
+    description: 'Instalaciones académicas y Sala DID localizadas en el Edificio 40.',
+    color: '#0284c7', // Sky
+    badgeBg: 'bg-sky-50 border-sky-200 text-sky-800',
+    badgeText: 'text-sky-700',
+    rooms: ['DID'],
+    floors: {
+      plantaBaja: [
+        { code: 'DID', name: 'Sala DID (Edificio 40)' }
+      ]
+    },
+    mapRect: { x: 40, y: 700, width: 30, height: 35, label: 'E-40', sublabel: 'Sala DID' }
   },
   {
     id: 'E-41',

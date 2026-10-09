@@ -27,6 +27,7 @@ import {
 import { ScheduleSession, DayName } from '../types';
 import { CONFIG } from '../config';
 import { CAMPUS_BUILDINGS, getClassroomDetails, CampusBuildingInfo } from '../data/campusBuildings';
+import { useTheme } from '../context/ThemeContext';
 
 interface BuildingOccupancyDashboardProps {
   sessions: ScheduleSession[];
@@ -59,6 +60,7 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
   onSelectClassroom,
   onNavigateToAvailableRooms
 }) => {
+  const { isDark } = useTheme();
   const [selectedDay, setSelectedDay] = useState<DayName | 'TODOS'>('TODOS');
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('ALL');
   const [viewMetric, setViewMetric] = useState<'percentage' | 'hours'>('percentage');
@@ -349,25 +351,28 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
     };
   }, [buildingStats, hourlyPeakData, physicalSessions]);
 
+  const gridStroke = isDark ? '#1e293b' : '#f1f5f9';
+  const axisTickColor = isDark ? '#94a3b8' : '#475569';
+
   return (
     <div className="space-y-6">
 
       {/* Header & Controls Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-cyan-900 text-white shadow-xs">
+              <div className="p-2 rounded-xl bg-cyan-900 dark:bg-cyan-800 text-white shadow-xs">
                 <BarChart3 className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 font-display flex items-center gap-2">
                   <span>Dashboard de Ocupación por Edificio y Horas Pico</span>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                     FCM Ensenada
                   </span>
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Monitoreo de carga académica en aulas, laboratorios y centros de cómputo para detectar saturación y disponibilidad.
                 </p>
               </div>
@@ -377,14 +382,14 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
           {/* Interactive Filters Toolbar */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Day Selector */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => setSelectedDay('TODOS')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   selectedDay === 'TODOS'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 Promedio
@@ -396,8 +401,8 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                   onClick={() => setSelectedDay(day)}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     selectedDay === day
-                      ? 'bg-white text-cyan-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-900 text-cyan-900 dark:text-cyan-300 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   {day.slice(0, 3)}
@@ -409,9 +414,9 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
             <select
               value={selectedBuildingId}
               onChange={(e) => setSelectedBuildingId(e.target.value)}
-              className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+              className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
             >
-              <option value="ALL">Todo el Campus (11 Edificios)</option>
+              <option value="ALL">Todo el Campus ({buildingStats.length} Edificios)</option>
               {buildingStats.map(b => (
                 <option key={b.buildingId} value={b.buildingId}>
                   {b.shortName} — {b.buildingName.replace(/^Edificio\s*\d+\s*\(?|\)?$/gi, '')} ({b.roomCount} aulas)
@@ -420,14 +425,14 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
             </select>
 
             {/* Metric Mode Toggle */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => setViewMetric('percentage')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMetric === 'percentage'
-                    ? 'bg-white text-cyan-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-cyan-900 dark:text-cyan-300 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
                 title="Mostrar porcentaje de ocupación respecto al total disponible"
               >
@@ -438,8 +443,8 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                 onClick={() => setViewMetric('hours')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMetric === 'hours'
-                    ? 'bg-white text-cyan-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-cyan-900 dark:text-cyan-300 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
                 title="Mostrar horas totales de clase impartidas"
               >
@@ -452,72 +457,72 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
         {/* 4 KPI Highlight Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
           {/* KPI 1: Hora Pico */}
-          <div className="p-3.5 rounded-xl bg-rose-50/80 border border-rose-200/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-rose-100 text-rose-700 shrink-0 mt-0.5">
+          <div className="p-3.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/80 flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 shrink-0 mt-0.5">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-rose-700">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
                 Hora Pico Máxima
               </div>
-              <div className="text-base font-black text-rose-950 font-mono mt-0.5">
+              <div className="text-base font-black text-rose-950 dark:text-rose-100 font-mono mt-0.5">
                 {kpis.peakHour ? kpis.peakHour.hourLabel : '—'}
               </div>
-              <div className="text-xs text-rose-800 font-medium">
+              <div className="text-xs text-rose-800 dark:text-rose-200/90 font-medium">
                 {kpis.peakHour ? `${kpis.peakHour.percentage}% de aulas ocupadas (${kpis.peakHour.occupiedRooms} simultáneas)` : ''}
               </div>
             </div>
           </div>
 
           {/* KPI 2: Edificio Mayor Ocupación */}
-          <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+          <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
                 Edificio Mayor Carga
               </div>
-              <div className="text-base font-black text-amber-950 truncate mt-0.5">
+              <div className="text-base font-black text-amber-950 dark:text-amber-100 truncate mt-0.5">
                 {kpis.topBuilding ? `${kpis.topBuilding.shortName}` : '—'}
               </div>
-              <div className="text-xs text-amber-800 font-medium truncate">
+              <div className="text-xs text-amber-800 dark:text-amber-200/90 font-medium truncate">
                 {kpis.topBuilding ? `${kpis.topBuilding.avgPercentage}% prom. semanal (${kpis.topBuilding.roomCount} aulas)` : ''}
               </div>
             </div>
           </div>
 
           {/* KPI 3: Franja Valle Recomendada */}
-          <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+          <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5">
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                 Ventana Despejada (Valle)
               </div>
-              <div className="text-base font-black text-emerald-950 font-mono mt-0.5">
+              <div className="text-base font-black text-emerald-950 dark:text-emerald-100 font-mono mt-0.5">
                 {kpis.valleyHour ? kpis.valleyHour.hourLabel : '—'}
               </div>
-              <div className="text-xs text-emerald-800 font-medium">
+              <div className="text-xs text-emerald-800 dark:text-emerald-200/90 font-medium">
                 {kpis.valleyHour ? `Solo ${kpis.valleyHour.percentage}% ocupación (alta disponibilidad)` : ''}
               </div>
             </div>
           </div>
 
           {/* KPI 4: Espacios Físicos Monitoreados */}
-          <div className="p-3.5 rounded-xl bg-cyan-50/80 border border-cyan-200/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-cyan-100 text-cyan-800 shrink-0 mt-0.5">
+          <div className="p-3.5 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/80 dark:border-cyan-800/80 flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/60 text-cyan-800 dark:text-cyan-300 shrink-0 mt-0.5">
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-800">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">
                 Aulas y Lab. Activos
               </div>
-              <div className="text-base font-black text-cyan-950 font-mono mt-0.5">
+              <div className="text-base font-black text-cyan-950 dark:text-cyan-100 font-mono mt-0.5">
                 {kpis.totalRooms} Aulas
               </div>
-              <div className="text-xs text-cyan-900 font-medium">
+              <div className="text-xs text-cyan-900 dark:text-cyan-200/90 font-medium">
                 Distribuidas en {kpis.totalBuildings} edificios del campus
               </div>
             </div>
@@ -526,18 +531,18 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
       </div>
 
       {/* Chart 1: Daily Occupancy by Building */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4 transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-cyan-700" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>
                 {selectedDay === 'TODOS'
                   ? `Comparativa Semanal de Ocupación por Edificio (Lunes a Viernes)`
                   : `Porcentaje de Ocupación por Edificio — Día ${selectedDay}`}
               </span>
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {viewMetric === 'percentage'
                 ? 'Porcentaje del horario disponible (07:00 a 21:00) ocupado con clases programadas.'
                 : 'Horas acumuladas de clase impartidas en las aulas de cada edificio.'}
@@ -545,13 +550,13 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1 text-slate-500">
+            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> &gt; 55% Alta
             </span>
-            <span className="flex items-center gap-1 text-slate-500">
+            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> 35-55% Media
             </span>
-            <span className="flex items-center gap-1 text-slate-500">
+            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> &lt; 35% Libre
             </span>
           </div>
@@ -565,10 +570,10 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                 data={buildingChartData}
                 margin={{ top: 10, right: 10, left: -10, bottom: 25 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                  tick={{ fontSize: 11, fill: axisTickColor, fontWeight: 600 }}
                   interval={0}
                   angle={-20}
                   textAnchor="end"
@@ -576,7 +581,7 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                 <YAxis
                   unit={viewMetric === 'percentage' ? '%' : 'h'}
                   domain={[0, viewMetric === 'percentage' ? 100 : 'auto']}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  tick={{ fontSize: 11, fill: axisTickColor }}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -627,10 +632,10 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                 data={buildingChartData}
                 margin={{ top: 10, right: 10, left: -10, bottom: 25 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                  tick={{ fontSize: 11, fill: axisTickColor, fontWeight: 600 }}
                   interval={0}
                   angle={-20}
                   textAnchor="end"
@@ -638,7 +643,7 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                 <YAxis
                   unit={viewMetric === 'percentage' ? '%' : 'h'}
                   domain={[0, viewMetric === 'percentage' ? 100 : 'auto']}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  tick={{ fontSize: 11, fill: axisTickColor }}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -696,25 +701,25 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
       </div>
 
       {/* Chart 2: Hourly Peaks (07:00 to 21:00) */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4 transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-600" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <span>
                 Curva Horaria de Saturación de Aulas (07:00 — 21:00 hrs)
               </span>
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Identificación de horas pico y valles de ocupación para {selectedBuildingId === 'ALL' ? 'todo el campus' : buildingStats.find(b => b.buildingId === selectedBuildingId)?.buildingName} ({selectedDay === 'TODOS' ? 'promedio semanal' : selectedDay}).
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-200">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800">
               <span className="w-2 h-2 rounded-full bg-rose-500"></span> Horas Pico (&gt;= {selectedBuildingId === 'ALL' ? '28%' : '50%'})
             </span>
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Horas Valle (&lt; {selectedBuildingId === 'ALL' ? '20%' : '30%'})
             </span>
           </div>
@@ -727,18 +732,18 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
               data={hourlyPeakData}
               margin={{ top: 10, right: 10, left: -10, bottom: 15 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
               <XAxis
                 dataKey="hour"
-                tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                tick={{ fontSize: 11, fill: axisTickColor, fontWeight: 600 }}
               />
               <YAxis
                 unit="%"
                 domain={[0, 100]}
-                tick={{ fontSize: 11, fill: '#64748b' }}
+                tick={{ fontSize: 11, fill: axisTickColor }}
               />
               <Tooltip
-                content={({ active, payload, label }) => {
+                content={({ active, payload }) => {
                   if (!active || !payload || !payload.length) return null;
                   const item = payload[0].payload;
                   return (
@@ -784,8 +789,8 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
         </div>
 
         {/* Quick Insights Banner */}
-        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-700">
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
             <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
               <strong>Hallazgo clave:</strong> Las horas de mayor demanda son matutinas (<strong>09:00 - 12:00 hrs</strong>) y nocturnas (<strong>19:00 - 21:00 hrs</strong>). La mejor ventana para programar eventos, exámenes o clases adicionales es entre <strong>14:00 y 16:00 hrs</strong>.
@@ -796,7 +801,7 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
             <button
               type="button"
               onClick={() => onNavigateToAvailableRooms(selectedDay === 'TODOS' ? 'Lunes' : selectedDay, '14:00', '16:00')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-900 text-white font-semibold hover:bg-cyan-800 transition-colors shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-900 dark:bg-cyan-700 text-white font-semibold hover:bg-cyan-800 dark:hover:bg-cyan-600 transition-colors shrink-0 cursor-pointer"
             >
               <span>Buscar aulas libres en franja valle (14:00 - 16:00)</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-cyan-300" />
@@ -806,18 +811,18 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
       </div>
 
       {/* Building Breakdown Cards / Table */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4 transition-colors duration-200">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-cyan-700" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Desglose Detallado por Edificio del Campus FCM</span>
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Resumen de aulas, porcentajes por día y botón para inspeccionar disponibilidad individual.
             </p>
           </div>
-          <span className="text-xs font-mono font-bold text-slate-500">
+          <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
             {buildingStats.length} Edificios
           </span>
         </div>
@@ -826,39 +831,39 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
           {buildingStats.map(b => (
             <div
               key={b.buildingId}
-              className="p-4 rounded-xl border border-slate-200 hover:border-cyan-300 hover:shadow-xs transition-all bg-white flex flex-col justify-between space-y-3"
+              className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-xs transition-all bg-white dark:bg-slate-800/50 flex flex-col justify-between space-y-3"
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 font-mono">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono border border-slate-200 dark:border-slate-700">
                     {b.shortName}
                   </span>
                   <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full ${
                     b.avgPercentage >= 50
-                      ? 'bg-rose-100 text-rose-800'
+                      ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                       : b.avgPercentage >= 35
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                   }`}>
                     {b.avgPercentage}% prom.
                   </span>
                 </div>
 
-                <h4 className="text-sm font-bold text-slate-900 mt-2 truncate" title={b.buildingName}>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-2 truncate" title={b.buildingName}>
                   {b.buildingName}
                 </h4>
 
-                <div className="text-xs text-slate-500 mt-1">
-                  <span className="font-semibold text-slate-700">{b.roomCount} aulas: </span>
-                  <span className="font-mono text-[11px] text-slate-600">
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{b.roomCount} aulas: </span>
+                  <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400">
                     {b.rooms.slice(0, 5).join(', ')}{b.rooms.length > 5 ? ` (+${b.rooms.length - 5})` : ''}
                   </span>
                 </div>
               </div>
 
               {/* Mini day-by-day progress bars */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase">
+              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-700/70">
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                   <span>Día</span>
                   <span>Ocupación</span>
                 </div>
@@ -866,10 +871,10 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                   const pct = b.dayStats[day].percentage;
                   return (
                     <div key={day} className="flex items-center gap-2 text-xs">
-                      <span className="w-7 text-[11px] font-medium text-slate-600 shrink-0">
+                      <span className="w-7 text-[11px] font-medium text-slate-600 dark:text-slate-400 shrink-0">
                         {day.slice(0, 3)}
                       </span>
-                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             pct >= 55
@@ -881,7 +886,7 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
                           style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
                         />
                       </div>
-                      <span className="w-8 text-right font-mono text-[11px] font-bold text-slate-700">
+                      <span className="w-8 text-right font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300">
                         {pct}%
                       </span>
                     </div>
@@ -890,16 +895,16 @@ export const BuildingOccupancyDashboard: React.FC<BuildingOccupancyDashboardProp
               </div>
 
               {/* Bottom footer: peak hour & quick link */}
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-500">
-                  ⚡ Pico: <strong className="text-slate-800 font-mono">{b.peakHour.hour}</strong>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-700/70 flex items-center justify-between text-[11px]">
+                <span className="text-slate-500 dark:text-slate-400">
+                  ⚡ Pico: <strong className="text-slate-800 dark:text-slate-200 font-mono">{b.peakHour.hour}</strong>
                 </span>
 
                 {onSelectClassroom && b.rooms.length > 0 && (
                   <button
                     type="button"
                     onClick={() => onSelectClassroom(b.rooms[0])}
-                    className="text-cyan-700 hover:text-cyan-900 font-bold inline-flex items-center gap-0.5 cursor-pointer"
+                    className="text-cyan-700 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-300 font-bold inline-flex items-center gap-0.5 cursor-pointer"
                   >
                     <span>Ver {b.rooms[0]}</span>
                     <ArrowUpRight className="w-3 h-3" />

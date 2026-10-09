@@ -24,11 +24,11 @@ export const CorrectionsTableModal: React.FC<CorrectionsTableModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200"
+        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-slate-900 dark:bg-slate-950 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1">
@@ -54,7 +54,7 @@ export const CorrectionsTableModal: React.FC<CorrectionsTableModalProps> = ({
         </div>
 
         {/* Search filter in modal */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -62,7 +62,7 @@ export const CorrectionsTableModal: React.FC<CorrectionsTableModalProps> = ({
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               placeholder="Buscar en correcciones por docente, materia, aula, ajuste..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
             />
           </div>
         </div>
@@ -73,47 +73,47 @@ export const CorrectionsTableModal: React.FC<CorrectionsTableModalProps> = ({
             filtered.map((c) => (
               <div
                 key={c.id}
-                className="p-4 rounded-xl border border-slate-200 bg-white hover:border-cyan-300 transition-all space-y-2 text-xs"
+                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 hover:border-cyan-300 dark:hover:border-cyan-700 transition-all space-y-2 text-xs"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-sm font-display">#{c.id}</span>
-                    <strong className="text-slate-900 text-sm">{c.profesor || 'Docente sin especificar'}</strong>
-                    {c.grupo && <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded font-medium">G. {c.grupo}</span>}
+                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm font-display">#{c.id}</span>
+                    <strong className="text-slate-900 dark:text-slate-100 text-sm">{c.profesor || 'Docente sin especificar'}</strong>
+                    {c.grupo && <span className="px-1.5 py-0.2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded font-medium">G. {c.grupo}</span>}
                   </div>
 
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-900 border border-cyan-200 self-start sm:self-auto">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 self-start sm:self-auto">
                     {c.tipoAjuste}
                   </span>
                 </div>
 
-                <div className="font-semibold text-slate-700">{c.asignatura}</div>
+                <div className="font-semibold text-slate-700 dark:text-slate-300">{c.asignatura}</div>
 
                 {/* Change comparison grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                  <div className="p-2 rounded-lg bg-slate-50 border border-slate-200/70">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-700/70">
+                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-700">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Original</span>
-                    <div className="text-slate-600">
+                    <div className="text-slate-600 dark:text-slate-300">
                       <strong>Día:</strong> {c.diaActual || 'No indicado'} • <strong>Hora:</strong> {c.horarioActual || 'No indicada'}
                     </div>
-                    <div className="text-slate-600">
+                    <div className="text-slate-600 dark:text-slate-300">
                       <strong>Salón:</strong> {c.salonActual || 'No indicado'}
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-200/80">
-                    <span className="text-[10px] font-bold uppercase text-emerald-700 block mb-0.5">Ajuste Solicitado / Aplicado</span>
-                    <div className="text-emerald-950">
+                  <div className="p-2 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/80">
+                    <span className="text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-400 block mb-0.5">Ajuste Solicitado / Aplicado</span>
+                    <div className="text-emerald-950 dark:text-emerald-200">
                       <strong>Día:</strong> {c.diaSolicitado || c.diaActual} • <strong>Hora:</strong> {c.horarioSolicitado || c.horarioActual}
                     </div>
-                    <div className="text-emerald-950">
+                    <div className="text-emerald-950 dark:text-emerald-200">
                       <strong>Nuevo Salón:</strong> {c.salonSolicitadoNuevo || 'Mismo salón'}
                     </div>
                   </div>
                 </div>
 
                 {c.observaciones && (
-                  <p className="text-slate-500 italic text-[11px] pt-1">
+                  <p className="text-slate-500 dark:text-slate-400 italic text-[11px] pt-1">
                     Obs: {c.observaciones}
                   </p>
                 )}
@@ -128,11 +128,11 @@ export const CorrectionsTableModal: React.FC<CorrectionsTableModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2 bg-slate-900 dark:bg-cyan-700 hover:bg-slate-800 dark:hover:bg-cyan-600 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Cerrar
           </button>

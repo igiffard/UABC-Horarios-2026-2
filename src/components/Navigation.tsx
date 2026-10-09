@@ -24,7 +24,7 @@ const TABS: TabItem[] = [
 
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onSelectTab }) => {
   return (
-    <nav className="bg-white border-b border-slate-200 shadow-xs sticky top-0 z-30 tabs-nav no-print">
+    <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xs sticky top-0 z-30 tabs-nav transition-colors duration-200 no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-start sm:justify-center overflow-x-auto py-2.5 gap-2 scrollbar-none">
           {TABS.map((tab) => {
@@ -37,15 +37,15 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onSelectTab }
                 onClick={() => onSelectTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-cyan-900 text-white shadow-md shadow-cyan-950/10'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 bg-transparent'
+                    ? 'bg-cyan-900 dark:bg-cyan-700 text-white shadow-md shadow-cyan-950/10'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800 bg-transparent'
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400 dark:text-cyan-200' : 'text-slate-400 dark:text-slate-500'}`} />
                 <span>{tab.label}</span>
                 {tab.id === 'disponibilidad' && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                    isActive ? 'bg-cyan-700 text-cyan-200' : 'bg-emerald-100 text-emerald-800'
+                    isActive ? 'bg-cyan-700 dark:bg-cyan-900 text-cyan-200' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                   }`}>
                     Dashboard
                   </span>

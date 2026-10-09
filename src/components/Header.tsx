@@ -1,7 +1,8 @@
 import React from 'react';
-import { RefreshCw, Printer, AlertTriangle, CheckCircle2, ShieldAlert, Layers, MapPin } from 'lucide-react';
+import { RefreshCw, Printer, AlertTriangle, CheckCircle2, ShieldAlert, Layers, MapPin, Sun, Moon } from 'lucide-react';
 import { ConsolidatedData } from '../types';
 import { CONFIG } from '../config';
+import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
   data: ConsolidatedData | null;
@@ -22,11 +23,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDirectoryModal,
   onOpenMapModal
 }) => {
+  const { theme, isDark, toggleTheme } = useTheme();
   const hasCorrectionsWarning = data?.sourcesStatus?.correctionsWarning;
   const totalConflicts = data?.conflictsCount ?? 0;
 
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 shadow-md no-print">
+    <header className="bg-slate-900 dark:bg-slate-950 text-white border-b border-slate-800 dark:border-slate-800/90 shadow-md transition-colors duration-200 no-print">
       {/* Top Banner if Corrections or Base failed */}
       {hasCorrectionsWarning && (
         <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs md:text-sm font-semibold flex items-center justify-between gap-2 shadow-inner">
@@ -115,6 +117,32 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>{totalConflicts} conflictos</span>
               </div>
             )}
+
+            {/* Global Dark / Light Mode Selector */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              id="btn-theme-toggle"
+              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              title={isDark ? 'Modo oscuro activo — Clic para cambiar a modo claro' : 'Modo claro activo — Clic para cambiar a modo oscuro'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer ${
+                isDark
+                  ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+            >
+              {isDark ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Modo Oscuro</span>
+                </>
+              )}
+            </button>
 
             {/* Print Button */}
             <button

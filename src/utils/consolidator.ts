@@ -194,7 +194,10 @@ export function applyCorrections(
 
       let matchRoom = true;
       if (roomActual && roomActual !== 'Sin Aula Asignada') {
-        matchRoom = s.aula === roomActual || (s.aulaOriginal && s.aulaOriginal.includes(corr.salonActual));
+        matchRoom =
+          s.aula === roomActual ||
+          Boolean(s.aulaOriginal && s.aulaOriginal.includes(corr.salonActual)) ||
+          Boolean(s.aula && corr.salonActual.toUpperCase().includes(s.aula.toUpperCase()));
       }
 
       // Si tenemos profesor y asignatura coincidentes, y día/horario/salón/tipo concuerdan

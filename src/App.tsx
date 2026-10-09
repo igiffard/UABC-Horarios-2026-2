@@ -157,7 +157,7 @@ export default function App() {
   }, [printOptions.targetType, printOptions.targetName, selectedEntityByTab]);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col selection:bg-cyan-200 selection:text-cyan-900">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-cyan-200 selection:text-cyan-900 dark:selection:bg-cyan-800 dark:selection:text-cyan-100 transition-colors duration-200">
       
       {/* Institutional Top Header */}
       <Header
@@ -186,10 +186,10 @@ export default function App() {
               <RefreshCw className="w-6 h-6 text-cyan-400 animate-spin" />
             </div>
             <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-slate-800 font-display">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 font-display">
                 Cargando y Consolidando Horarios Oficiales...
               </h3>
-              <p className="text-xs text-slate-500 max-w-sm">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
                 Procesando bases de datos de la Facultad de Ciencias Marinas y aplicando correcciones prioritarias.
               </p>
             </div>
@@ -198,13 +198,13 @@ export default function App() {
 
         {/* Error State */}
         {error && !data && (
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-8 max-w-lg mx-auto text-center space-y-4 shadow-sm my-12">
-            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+          <div className="bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-2xl p-8 max-w-lg mx-auto text-center space-y-4 shadow-sm my-12">
+            <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-rose-950">Error al cargar datos</h3>
-              <p className="text-xs text-rose-700 mt-1">{error}</p>
+              <h3 className="text-base font-bold text-rose-950 dark:text-rose-200">Error al cargar datos</h3>
+              <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">{error}</p>
             </div>
             <button
               type="button"
@@ -279,13 +279,13 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500 no-print">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200 no-print">
         <div className="max-w-7xl mx-auto px-4 space-y-1.5">
-          <div className="flex items-center justify-center gap-2 font-medium text-slate-700">
-            <ShieldCheck className="w-4 h-4 text-cyan-700" />
+          <div className="flex items-center justify-center gap-2 font-medium text-slate-700 dark:text-slate-200">
+            <ShieldCheck className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
             <span>{CONFIG.INSTITUTION_NAME} — Sistema de Consulta de Horarios</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
             Horario Consolidado Ciclo 2026-2 • Última sincronización: {lastLoadedAt.toLocaleTimeString('es-MX')}
           </p>
         </div>

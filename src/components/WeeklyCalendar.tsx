@@ -169,26 +169,26 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
   const hiddenActivitiesCount = validSessions.length - activeSessions.length;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-200">
       
       {/* Calendar Header / Title bar */}
       {(title || subtitle) && (
-        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            {title && <h3 className="text-base font-bold text-slate-900 font-display">{title}</h3>}
-            {subtitle && <p className="text-xs text-slate-500 font-medium">{subtitle}</p>}
+            {title && <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 font-display">{title}</h3>}
+            {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{subtitle}</p>}
           </div>
 
-          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-slate-500">
+          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span>
               07:00 a 21:00 hrs
             </span>
-            <span className="flex items-center gap-1.5 font-semibold text-slate-700">
+            <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
               <span>{activeSessions.length} sesiones</span>
               {hiddenActivitiesCount > 0 && (
-                <span className="text-[11px] font-medium text-purple-800 bg-purple-100/80 px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
-                  <FlaskConical className="w-3 h-3 text-purple-600" />
+                <span className="text-[11px] font-medium text-purple-800 dark:text-purple-200 bg-purple-100/80 dark:bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                  <FlaskConical className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                   <span>{hiddenActivitiesCount} act. ocultas</span>
                 </span>
               )}
@@ -207,7 +207,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
       )}
 
       {/* Mobile Day Selector (Visible on small screens) */}
-      <div className="md:hidden flex items-center justify-around bg-slate-100 p-1.5 border-b border-slate-200">
+      <div className="md:hidden flex items-center justify-around bg-slate-100 dark:bg-slate-800 p-1.5 border-b border-slate-200 dark:border-slate-700">
         {DAYS.map((day) => {
           const count = activeSessions.filter(s => s.dia === day).length;
           const isSelected = selectedMobileDay === day;
@@ -218,13 +218,13 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
               onClick={() => setSelectedMobileDay(day)}
               className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-cyan-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-cyan-900 dark:bg-cyan-700 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               <span>{day.slice(0, 3)}</span>
               {count > 0 && (
-                <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-cyan-800 text-cyan-200' : 'bg-slate-200 text-slate-700'}`}>
+                <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-cyan-800 dark:bg-cyan-600 text-cyan-200' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                   {count}
                 </span>
               )}
@@ -238,15 +238,15 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
         <div className="min-w-[640px] md:min-w-full">
           
           {/* Day Column Headers (Desktop) */}
-          <div className="grid grid-cols-[65px_repeat(5,1fr)] bg-slate-100/90 border-b border-slate-300 text-xs font-bold text-slate-800 uppercase tracking-wider sticky top-0 z-20">
-            <div className="p-3 text-center text-slate-500 border-r border-slate-300 font-mono">Hora</div>
+          <div className="grid grid-cols-[65px_repeat(5,1fr)] bg-slate-100/90 dark:bg-slate-800/95 border-b border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider sticky top-0 z-20">
+            <div className="p-3 text-center text-slate-500 dark:text-slate-400 border-r border-slate-300 dark:border-slate-700 font-mono">Hora</div>
             {DAYS.map((day) => {
               const dayCount = activeSessions.filter(s => s.dia === day).length;
               return (
-                <div key={day} className="p-3 text-center border-r border-slate-300 last:border-r-0 flex items-center justify-center gap-1.5">
-                  <span className="font-bold text-slate-900">{day}</span>
+                <div key={day} className="p-3 text-center border-r border-slate-300 dark:border-slate-700 last:border-r-0 flex items-center justify-center gap-1.5">
+                  <span className="font-bold text-slate-900 dark:text-slate-100">{day}</span>
                   {dayCount > 0 && (
-                    <span className="text-[10px] font-semibold bg-cyan-100 text-cyan-900 px-1.5 py-0.2 rounded-full border border-cyan-200">
+                    <span className="text-[10px] font-semibold bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 px-1.5 py-0.2 rounded-full border border-cyan-200 dark:border-cyan-800">
                       {dayCount}
                     </span>
                   )}
@@ -259,11 +259,11 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
           <div className="grid grid-cols-[65px_repeat(5,1fr)] relative" style={{ height: '980px' }}>
             
             {/* Time Labels Column */}
-            <div className="border-r border-slate-300 bg-slate-50 relative select-none">
+            <div className="border-r border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/90 relative select-none">
               {HOURS.map((hour, idx) => (
                 <div
                   key={hour}
-                  className="absolute w-full text-right pr-2 text-[10px] sm:text-[11px] font-bold text-slate-600 font-mono"
+                  className="absolute w-full text-right pr-2 text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 font-mono"
                   style={{ top: `${(idx / 14) * 100}%`, transform: 'translateY(-50%)' }}
                 >
                   {hour}
@@ -274,9 +274,9 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
             {/* Background Grid Lines across all 5 day columns */}
             <div className="absolute inset-0 left-[65px] pointer-events-none grid grid-rows-14">
               {Array.from({ length: 14 }).map((_, idx) => (
-                <div key={idx} className="border-b border-slate-200 w-full relative">
+                <div key={idx} className="border-b border-slate-200 dark:border-slate-800 w-full relative">
                   {/* 30-min subtle line */}
-                  <div className="absolute top-1/2 left-0 right-0 border-b border-slate-100 border-dashed"></div>
+                  <div className="absolute top-1/2 left-0 right-0 border-b border-slate-100 dark:border-slate-800/60 border-dashed"></div>
                 </div>
               ))}
             </div>
@@ -289,7 +289,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
               return (
                 <div
                   key={day}
-                  className="border-r border-slate-300 last:border-r-0 relative h-full p-0.5"
+                  className="border-r border-slate-300 dark:border-slate-700 last:border-r-0 relative h-full p-0.5"
                 >
                   {positioned.map((pos) => {
                     const session = pos.session;
@@ -334,10 +334,10 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                         title={`Click para ver detalles:\n${session.asignatura}\n${session.profesor}\n${session.aula} (${session.horaInicio} - ${session.horaFin})${isPracticaCampo ? '\n[Práctica de Campo (P)]' : ''}${isActivity ? '\n[Horas de Investigación / Actividad Académica]' : ''}`}
                         className={`absolute cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg hover:z-30 overflow-hidden ${
                           isAscMode
-                            ? `bg-white border-2 ${isActivity ? 'border-purple-600 bg-purple-50/30' : 'border-slate-700'} text-slate-900 rounded-lg ${isCompact ? 'p-1' : 'p-2'} shadow-2xs`
+                            ? `bg-white dark:bg-slate-800 border-2 ${isActivity ? 'border-purple-600 dark:border-purple-500 bg-purple-50/30 dark:bg-purple-950/30' : 'border-slate-700 dark:border-slate-500'} text-slate-900 dark:text-slate-100 rounded-lg ${isCompact ? 'p-1' : 'p-2'} shadow-2xs`
                             : `rounded-xl ${isCompact ? 'p-1.5' : 'p-2'} border ${color.bg} ${color.border} ${color.text}`
                         } ${
-                          session.hasConflict ? 'ring-2 ring-rose-500 ring-offset-1 bg-rose-50/95 !border-rose-600' : ''
+                          session.hasConflict ? 'ring-2 ring-rose-500 ring-offset-1 bg-rose-50/95 dark:bg-rose-950/90 !border-rose-600' : ''
                         }`}
                       >
                         {/* aSc Format Corner Layout (Room at Top-Right, Subgroup at Top-Left) */}
@@ -349,26 +349,26 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                               
                               <div className="flex items-center gap-1 flex-wrap">
                                 {options.showTime && (
-                                  <span className={`font-mono font-bold text-slate-700 bg-slate-100 px-1 py-0.2 rounded border border-slate-300 ${isUltraCompact ? 'text-[7.5px]' : 'text-[8.5px]'}`}>
+                                  <span className={`font-mono font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-1 py-0.2 rounded border border-slate-300 dark:border-slate-700 ${isUltraCompact ? 'text-[7.5px]' : 'text-[8.5px]'}`}>
                                     {session.horaInicio}-{session.horaFin}
                                   </span>
                                 )}
 
                                 {options.showGroup && session.subgrupo && (
-                                  <span className="font-bold text-[8px] px-1 py-0.2 rounded bg-slate-200 text-slate-800 border border-slate-300">
+                                  <span className="font-bold text-[8px] px-1 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600">
                                     {session.subgrupo}
                                   </span>
                                 )}
 
                                 {options.showType && isPracticaCampo && (
-                                  <span title="Práctica de Campo (P)" className="px-1 py-0.2 rounded bg-emerald-100 text-emerald-900 font-bold text-[8px] border border-emerald-300">
+                                  <span title="Práctica de Campo (P)" className="px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-200 font-bold text-[8px] border border-emerald-300 dark:border-emerald-700">
                                     P
                                   </span>
                                 )}
 
                                 {options.showType && isActivity && !isPracticaCampo && (
-                                  <span title="Horas de Investigación / Actividad Académica" className="px-1 py-0.2 rounded bg-purple-100 text-purple-900 font-bold text-[8px] border border-purple-300 flex items-center gap-0.5">
-                                    <FlaskConical className="w-2.5 h-2.5 text-purple-700" />
+                                  <span title="Horas de Investigación / Actividad Académica" className="px-1 py-0.2 rounded bg-purple-100 dark:bg-purple-900/80 text-purple-900 dark:text-purple-200 font-bold text-[8px] border border-purple-300 dark:border-purple-700 flex items-center gap-0.5">
+                                    <FlaskConical className="w-2.5 h-2.5 text-purple-700 dark:text-purple-300" />
                                     {!isUltraCompact && <span>Act</span>}
                                   </span>
                                 )}
@@ -379,8 +379,8 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                       title={`Inscritos: ${session.inscritos} alumnos | Cupo Grupo: ${session.cupoGrupo ?? 'N/A'}${session.capacidadSalon ? ` | Capacidad Salón: ${session.capacidadSalon}` : ''}`} 
                                       className={`px-1 py-0.2 rounded font-bold text-[7.5px] border ${
                                         session.alertaSobrecupo
-                                          ? 'bg-rose-100 text-rose-900 border-rose-300 animate-pulse'
-                                          : 'bg-cyan-50 text-cyan-900 border-cyan-200'
+                                          ? 'bg-rose-100 dark:bg-rose-900/80 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-700 animate-pulse'
+                                          : 'bg-cyan-50 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-200 border-cyan-200 dark:border-cyan-800'
                                       }`}
                                     >
                                       👤 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''}
@@ -388,7 +388,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                   ) : (session.cupoGrupo !== undefined && session.cupoGrupo !== null) ? (
                                     <span 
                                       title={`Cupo Grupo: ${session.cupoGrupo} alumnos${session.capacidadSalon ? ` | Capacidad Salón: ${session.capacidadSalon}` : ''}`} 
-                                      className="px-1 py-0.2 rounded font-bold text-[7.5px] border bg-cyan-50 text-cyan-900 border-cyan-200"
+                                      className="px-1 py-0.2 rounded font-bold text-[7.5px] border bg-cyan-50 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-200 border-cyan-200 dark:border-cyan-800"
                                     >
                                       👤 {session.cupoGrupo}
                                     </span>
@@ -400,11 +400,11 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                               {options.showRoom && session.aula && (
                                 <span 
                                   title={`Salón: ${session.aula}${session.capacidadSalon ? ` (Capacidad: ${session.capacidadSalon} asientos)` : ''}`}
-                                  className={`font-mono font-extrabold text-slate-900 bg-slate-100 px-1 py-0.2 rounded border border-slate-400 shrink-0 ${isUltraCompact ? 'text-[8px]' : 'text-[9.5px]'}`}
+                                  className={`font-mono font-extrabold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-900 px-1 py-0.2 rounded border border-slate-400 dark:border-slate-600 shrink-0 ${isUltraCompact ? 'text-[8px]' : 'text-[9.5px]'}`}
                                 >
                                   {session.aula}
                                   {options.showCapacity && session.capacidadSalon ? (
-                                    <span className="font-sans font-normal text-[7.5px] text-slate-600 ml-0.5">
+                                    <span className="font-sans font-normal text-[7.5px] text-slate-600 dark:text-slate-400 ml-0.5">
                                       ({session.capacidadSalon})
                                     </span>
                                   ) : null}
@@ -414,39 +414,39 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
 
                             {/* Center Subject Name */}
                             <div className="my-auto py-0.5 text-center">
-                              <h4 className={`font-bold leading-tight line-clamp-2 text-slate-950 ${isUltraCompact ? 'text-[8.5px]' : isCompact ? 'text-[9.5px]' : 'text-[11px]'}`}>
+                              <h4 className={`font-bold leading-tight line-clamp-2 text-slate-950 dark:text-white ${isUltraCompact ? 'text-[8.5px]' : isCompact ? 'text-[9.5px]' : 'text-[11px]'}`}>
                                 {session.asignatura}
                               </h4>
 
                               {/* Teacher below subject */}
                               {options.showTeacher && session.profesor && (
-                                <p className={`font-medium text-slate-700 truncate mt-0.5 ${isUltraCompact ? 'text-[7.5px]' : 'text-[9px]'}`}>
+                                <p className={`font-medium text-slate-700 dark:text-slate-300 truncate mt-0.5 ${isUltraCompact ? 'text-[7.5px]' : 'text-[9px]'}`}>
                                   {session.profesor}
                                 </p>
                               )}
                             </div>
 
                             {/* Bottom row: Group or Correction Badges & Overcapacity Warning */}
-                            <div className="flex items-center justify-between gap-1 leading-none mt-0.5 pt-0.5 border-t border-slate-100">
+                            <div className="flex items-center justify-between gap-1 leading-none mt-0.5 pt-0.5 border-t border-slate-100 dark:border-slate-700/60">
                               {options.showGroup && session.grupo && session.grupo !== '-' ? (
-                                <span className="text-[8px] font-semibold text-slate-600">
+                                <span className="text-[8px] font-semibold text-slate-600 dark:text-slate-400">
                                   G.{session.grupo}
                                 </span>
                               ) : <span></span>}
 
                               <div className="flex items-center gap-0.5">
                                 {session.alertaSobrecupo && (
-                                  <span title={`⚠️ Sobrecupo: ${session.inscritos} alumnos inscritos superan la capacidad física de ${session.capacidadSalon} del salón`} className="px-1 py-0.2 rounded bg-amber-100 text-amber-900 font-bold text-[7.5px] border border-amber-300">
+                                  <span title={`⚠️ Sobrecupo: ${session.inscritos} alumnos inscritos superan la capacidad física de ${session.capacidadSalon} del salón`} className="px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 font-bold text-[7.5px] border border-amber-300 dark:border-amber-700">
                                     ⚠️ Sobrecupo
                                   </span>
                                 )}
                                 {session.isCorrection && (
-                                  <span title="Ajustado por corrección" className="p-0.5 rounded bg-emerald-100 text-emerald-800">
+                                  <span title="Ajustado por corrección" className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300">
                                     <Sparkles className="w-2.5 h-2.5" />
                                   </span>
                                 )}
                                 {session.hasConflict && (
-                                  <span title="Conflicto detectado" className="p-0.5 rounded bg-rose-100 text-rose-800">
+                                  <span title="Conflicto detectado" className="p-0.5 rounded bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-300">
                                     <AlertTriangle className="w-2.5 h-2.5" />
                                   </span>
                                 )}
@@ -461,36 +461,36 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                               {/* Top Badges: Time & Indicators */}
                               <div className="flex items-center justify-between gap-1 mb-1 leading-none">
                                 {options.showTime ? (
-                                  <span className={`font-mono font-bold px-1.5 py-0.5 rounded bg-white/90 border border-black/5 shrink-0 shadow-2xs ${isUltraCompact ? 'text-[8px]' : 'text-[9px]'}`}>
+                                  <span className={`font-mono font-bold px-1.5 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-slate-100 border border-black/5 dark:border-white/10 shrink-0 shadow-2xs ${isUltraCompact ? 'text-[8px]' : 'text-[9px]'}`}>
                                     {session.horaInicio} - {session.horaFin}
                                   </span>
                                 ) : <span></span>}
 
                                 <div className="flex items-center gap-0.5 shrink-0">
                                   {options.showType && isPracticaCampo && (
-                                    <span title="Práctica de Campo (P)" className="p-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[8px] flex items-center gap-0.5 px-1">
-                                      <Compass className="w-2.5 h-2.5 text-emerald-700 shrink-0" />
+                                    <span title="Práctica de Campo (P)" className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-900/90 text-emerald-800 dark:text-emerald-200 font-bold text-[8px] flex items-center gap-0.5 px-1">
+                                      <Compass className="w-2.5 h-2.5 text-emerald-700 dark:text-emerald-300 shrink-0" />
                                       {!isUltraCompact && <span>P</span>}
                                     </span>
                                   )}
                                   {options.showType && isActivity && !isPracticaCampo && (
-                                    <span title="Horas de Investigación / Actividad Académica" className="p-0.5 rounded bg-purple-100 text-purple-900 font-bold text-[8px] flex items-center gap-0.5 px-1">
-                                      <FlaskConical className="w-2.5 h-2.5 text-purple-700 shrink-0" />
+                                    <span title="Horas de Investigación / Actividad Académica" className="p-0.5 rounded bg-purple-100 dark:bg-purple-900/90 text-purple-900 dark:text-purple-200 font-bold text-[8px] flex items-center gap-0.5 px-1">
+                                      <FlaskConical className="w-2.5 h-2.5 text-purple-700 dark:text-purple-300 shrink-0" />
                                       {!isUltraCompact && <span>Act</span>}
                                     </span>
                                   )}
                                   {session.isCorrection && (
-                                    <span title="Ajustado por corrección" className="p-0.5 rounded bg-emerald-100 text-emerald-700">
+                                    <span title="Ajustado por corrección" className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
                                       <Sparkles className="w-2.5 h-2.5" />
                                     </span>
                                   )}
                                   {session.alertaSobrecupo && (
-                                    <span title={`⚠️ Sobrecupo: ${session.inscritos} alumnos > Cap. ${session.capacidadSalon}`} className="px-1 py-0.2 rounded bg-amber-200 text-amber-950 font-bold text-[8px]">
+                                    <span title={`⚠️ Sobrecupo: ${session.inscritos} alumnos > Cap. ${session.capacidadSalon}`} className="px-1 py-0.2 rounded bg-amber-200 dark:bg-amber-800 text-amber-950 dark:text-amber-100 font-bold text-[8px]">
                                       ⚠️
                                     </span>
                                   )}
                                   {session.hasConflict && (
-                                    <span title="Choque de horario detectado" className="p-0.5 rounded bg-rose-100 text-rose-700 animate-pulse">
+                                    <span title="Choque de horario detectado" className="p-0.5 rounded bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 animate-pulse">
                                       <AlertTriangle className="w-2.5 h-2.5" />
                                     </span>
                                   )}
@@ -504,7 +504,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
 
                               {/* Teacher */}
                               {options.showTeacher && highlightType !== 'profesor' && session.profesor && (
-                                <p className={`font-medium text-slate-700 truncate mt-0.5 flex items-center gap-1 ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
+                                <p className={`font-medium text-slate-700 dark:text-slate-300 truncate mt-0.5 flex items-center gap-1 ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
                                   <User className="w-2.5 h-2.5 shrink-0 text-slate-400" />
                                   <span>{session.profesor}</span>
                                 </p>
@@ -512,12 +512,12 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
 
                               {/* Classroom with capacity */}
                               {options.showRoom && highlightType !== 'aula' && session.aula && (
-                                <p className={`font-semibold text-cyan-800 truncate mt-0.5 flex items-center gap-1 ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
-                                  <MapPin className="w-2.5 h-2.5 shrink-0 text-cyan-600" />
+                                <p className={`font-semibold text-cyan-800 dark:text-cyan-300 truncate mt-0.5 flex items-center gap-1 ${isUltraCompact ? 'text-[8px]' : 'text-[10px]'}`}>
+                                  <MapPin className="w-2.5 h-2.5 shrink-0 text-cyan-600 dark:text-cyan-400" />
                                   <span>
                                     {session.aula}
                                     {options.showCapacity && session.capacidadSalon ? (
-                                      <span className="font-normal text-slate-600 text-[9px] ml-1">
+                                      <span className="font-normal text-slate-600 dark:text-slate-400 text-[9px] ml-1">
                                         (Cap. {session.capacidadSalon})
                                       </span>
                                     ) : null}
@@ -529,7 +529,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                             {/* Group badge and Enrollment info */}
                             <div className="mt-1 flex items-center justify-between gap-1 flex-wrap">
                               {options.showGroup && session.grupo && session.grupo !== '-' && !isUltraCompact && (
-                                <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-white/70 border border-black/5 text-slate-700 inline-flex items-center gap-0.5">
+                                <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-white/70 dark:bg-slate-900/70 border border-black/5 dark:border-white/10 text-slate-700 dark:text-slate-200 inline-flex items-center gap-0.5">
                                   <Users className="w-2 h-2 text-slate-400" />
                                   G.{session.grupo}
                                 </span>
@@ -539,13 +539,13 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                                 (session.inscritos !== undefined && session.inscritos !== null) ? (
                                   <span className={`text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 ${
                                     session.alertaSobrecupo
-                                      ? 'bg-amber-100 text-amber-900 border-amber-300'
-                                      : 'bg-white/80 text-slate-800 border-black/5'
+                                      ? 'bg-amber-100 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700'
+                                      : 'bg-white/80 dark:bg-slate-900/80 text-slate-800 dark:text-slate-200 border-black/5 dark:border-white/10'
                                   }`}>
                                     👥 {session.inscritos}{session.cupoGrupo ? `/${session.cupoGrupo}` : ''} est.
                                   </span>
                                 ) : (session.cupoGrupo !== undefined && session.cupoGrupo !== null) ? (
-                                  <span className="text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 bg-white/80 text-slate-800 border-black/5">
+                                  <span className="text-[8.5px] font-semibold px-1 py-0.2 rounded border inline-flex items-center gap-0.5 bg-white/80 dark:bg-slate-900/80 text-slate-800 dark:text-slate-200 border-black/5 dark:border-white/10">
                                     👥 Cupo: {session.cupoGrupo}
                                   </span>
                                 ) : null

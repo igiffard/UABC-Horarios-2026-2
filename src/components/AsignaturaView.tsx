@@ -437,21 +437,21 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
     <div className="space-y-6">
       
       {/* Botones de Diferenciación: Licenciatura vs Posgrado */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs transition-colors duration-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-blue-900 text-blue-300 flex items-center justify-center shrink-0">
                 <Filter className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>Diferenciar Nivel Académico</span>
-                  <span className="text-[10px] bg-slate-100 text-slate-700 font-mono px-2 py-0.2 rounded-full font-bold">
+                  <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono px-2 py-0.2 rounded-full font-bold">
                     {subjects.length} materias totales
                   </span>
                 </h3>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Filtra rápidamente entre materias de carreras de Licenciatura y programas de Posgrado (Maestría y Doctorado).
                 </p>
               </div>
@@ -459,7 +459,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
           </div>
 
           {/* Segmented Filter Buttons */}
-          <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl gap-1 shrink-0 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl gap-1 shrink-0 flex-wrap sm:flex-nowrap">
             
             {/* Botón: Todas */}
             <button
@@ -467,13 +467,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               onClick={() => handleSelectLevel('ALL')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 levelFilter === 'ALL'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  ? 'bg-slate-900 dark:bg-cyan-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700'
               }`}
             >
               <span>Todas</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                levelFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                levelFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}>
                 {subjects.length}
               </span>
@@ -486,13 +486,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 levelFilter === 'LICENCIATURA'
                   ? 'bg-cyan-700 text-white shadow-md shadow-cyan-700/20 ring-2 ring-cyan-500/40'
-                  : 'text-cyan-900 hover:text-cyan-950 hover:bg-cyan-50'
+                  : 'text-cyan-900 dark:text-cyan-300 hover:text-cyan-950 dark:hover:text-white hover:bg-cyan-50 dark:hover:bg-cyan-950/50'
               }`}
             >
-              <GraduationCap className={`w-4 h-4 ${levelFilter === 'LICENCIATURA' ? 'text-white' : 'text-cyan-700'}`} />
+              <GraduationCap className={`w-4 h-4 ${levelFilter === 'LICENCIATURA' ? 'text-white' : 'text-cyan-700 dark:text-cyan-400'}`} />
               <span>Licenciatura</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
-                levelFilter === 'LICENCIATURA' ? 'bg-white/25 text-white' : 'bg-cyan-100 text-cyan-800'
+                levelFilter === 'LICENCIATURA' ? 'bg-white/25 text-white' : 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300'
               }`}>
                 {licenciaturaSubjects.length}
               </span>
@@ -505,13 +505,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 levelFilter === 'POSGRADO'
                   ? 'bg-purple-700 text-white shadow-md shadow-purple-700/20 ring-2 ring-purple-500/40'
-                  : 'text-purple-900 hover:text-purple-950 hover:bg-purple-50'
+                  : 'text-purple-900 dark:text-purple-300 hover:text-purple-950 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-950/50'
               }`}
             >
-              <Award className={`w-4 h-4 ${levelFilter === 'POSGRADO' ? 'text-white' : 'text-purple-700'}`} />
+              <Award className={`w-4 h-4 ${levelFilter === 'POSGRADO' ? 'text-white' : 'text-purple-700 dark:text-purple-400'}`} />
               <span>Posgrado</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
-                levelFilter === 'POSGRADO' ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-800'
+                levelFilter === 'POSGRADO' ? 'bg-white/25 text-white' : 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300'
               }`}>
                 {posgradoSubjects.length}
               </span>
@@ -522,7 +522,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
         {/* Quick-switch chips for current level */}
         <div className="pt-3 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[11px] font-semibold text-slate-500 shrink-0">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
             {levelFilter === 'LICENCIATURA' 
               ? 'Materias de Licenciatura:' 
               : levelFilter === 'POSGRADO' 
@@ -545,7 +545,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                     ? isPos 
                       ? 'bg-purple-700 text-white shadow-xs' 
                       : 'bg-cyan-700 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
                 title={sub}
               >
@@ -557,7 +557,7 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
       </div>
 
       {/* Search & Selection Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs search-container">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs search-container transition-colors duration-200">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="max-w-2xl flex-1">
             <AutocompleteInput
@@ -595,9 +595,9 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenDirectory('asignaturas')}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 shadow-2xs shrink-0 cursor-pointer h-[42px]"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 cursor-pointer h-[42px]"
             >
-              <Layers className="w-4 h-4 text-cyan-700" />
+              <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Ver Catálogo General ({subjects.length})</span>
             </button>
           )}
@@ -706,30 +706,30 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
       {/* SECCIÓN ESPECIAL SOLICITADA: HORAS Y GRUPOS DE CLASE (C), TALLER (T) Y LABORATORIO (L) */}
       {selectedSubject && activityStats && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-6 transition-colors duration-200">
           
           {/* Header de la sección */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-700">
+                <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
                   <Layers className="w-4 h-4" />
                 </span>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                   Estructura Docente: Horas y Grupos por Modalidad
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Desglose curricular de horas de <strong className="text-blue-700">Clase Teórica (C)</strong>, <strong className="text-amber-700">Taller (T)</strong> y <strong className="text-emerald-700">Laboratorio (L)</strong>, así como la cantidad de grupos y subgrupos asignados.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Desglose curricular de horas de <strong className="text-blue-700 dark:text-blue-400">Clase Teórica (C)</strong>, <strong className="text-amber-700 dark:text-amber-400">Taller (T)</strong> y <strong className="text-emerald-700 dark:text-emerald-400">Laboratorio (L)</strong>, así como la cantidad de grupos y subgrupos asignados.
               </p>
             </div>
 
             {/* Carga promedio del estudiante */}
             {activityStats.totalStudentCurricularHours > 0 && (
-              <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl shrink-0">
-                <Clock className="w-4 h-4 text-cyan-700" />
-                <span className="text-xs text-slate-600">Carga por estudiante:</span>
-                <span className="text-xs font-extrabold text-slate-900 font-mono">
+              <div className="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 rounded-xl shrink-0">
+                <Clock className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
+                <span className="text-xs text-slate-600 dark:text-slate-300">Carga por estudiante:</span>
+                <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 font-mono">
                   {activityStats.totalStudentCurricularHours % 1 === 0 
                     ? `${activityStats.totalStudentCurricularHours} h` 
                     : `${activityStats.totalStudentCurricularHours.toFixed(1)} h`} / semana
@@ -747,29 +747,29 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               className={`rounded-2xl p-4 sm:p-5 border transition-all cursor-pointer relative overflow-hidden ${
                 activityStats.clase.groupsCount > 0 
                   ? activityFilter === 'C'
-                    ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-500/30 shadow-md'
-                    : 'bg-white hover:bg-blue-50/40 border-blue-200/80 hover:border-blue-300 shadow-2xs'
-                  : 'bg-slate-50/60 border-slate-200 opacity-60'
+                    ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 ring-2 ring-blue-500/30 shadow-md'
+                    : 'bg-white dark:bg-slate-800/70 hover:bg-blue-50/40 dark:hover:bg-blue-950/30 border-blue-200/80 dark:border-blue-800/60 hover:border-blue-300 shadow-2xs'
+                  : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    activityStats.clase.groupsCount > 0 ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-200 text-slate-400'
+                    activityStats.clase.groupsCount > 0 ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                   }`}>
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-blue-900">Modalidad</div>
-                    <h4 className="text-base font-bold text-slate-900">Clase (C)</h4>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300">Modalidad</div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">Clase (C)</h4>
                   </div>
                 </div>
                 {activityStats.clase.groupsCount > 0 ? (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-mono">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/70 text-blue-800 dark:text-blue-200 font-mono">
                     {activityStats.clase.groupsCount} {activityStats.clase.groupsCount === 1 ? 'grupo' : 'grupos'}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                     Sin clases C
                   </span>
                 )}
@@ -778,30 +778,30 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               {activityStats.clase.groupsCount > 0 ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-black text-slate-900 font-mono">
+                    <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
                       {activityStats.clase.hoursPerGroupFormatted}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-500">por grupo</span>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">por grupo</span>
                   </div>
 
-                  <div className="pt-2 border-t border-blue-100 grid grid-cols-2 gap-2 text-xs">
+                  <div className="pt-2 border-t border-blue-100 dark:border-blue-900/50 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Total Impartido</span>
-                      <span className="font-bold text-slate-800 font-mono">{activityStats.clase.totalHoursFormatted} totales</span>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Total Impartido</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">{activityStats.clase.totalHoursFormatted} totales</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Grupos Activos</span>
-                      <span className="font-bold text-blue-700 font-mono truncate block" title={activityStats.clase.groupsList.join(', ')}>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Grupos Activos</span>
+                      <span className="font-bold text-blue-700 dark:text-blue-300 font-mono truncate block" title={activityStats.clase.groupsList.join(', ')}>
                         {activityStats.clase.groupsList.join(', ')}
                       </span>
                     </div>
                   </div>
 
                   {activityStats.clase.roomsList.length > 0 && (
-                    <div className="text-[11px] text-slate-600 flex items-center gap-1.5 flex-wrap">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span className="text-slate-400 font-medium">Aulas:</span>
-                      <span className="font-semibold text-slate-800 font-mono">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5 flex-wrap">
+                      <Building2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">Aulas:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">
                         {activityStats.clase.roomsList.slice(0, 4).join(', ')}
                         {activityStats.clase.roomsList.length > 4 ? ` +${activityStats.clase.roomsList.length - 4}` : ''}
                       </span>
@@ -809,14 +809,14 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                   )}
 
                   <div className="pt-1 flex items-center justify-between text-[11px]">
-                    <span className={`font-semibold ${activityFilter === 'C' ? 'text-blue-700' : 'text-slate-400'}`}>
+                    <span className={`font-semibold ${activityFilter === 'C' ? 'text-blue-700 dark:text-blue-300' : 'text-slate-400 dark:text-slate-500'}`}>
                       {activityFilter === 'C' ? '✓ Filtrando en horario' : 'Clic para filtrar horario'}
                     </span>
-                    <span className="text-blue-600 font-bold">{activityStats.clase.sessionsCount} sesiones</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">{activityStats.clase.sessionsCount} sesiones</span>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 py-3">Esta asignatura no tiene sesiones teóricas de tipo clase registradas.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 py-3">Esta asignatura no tiene sesiones teóricas de tipo clase registradas.</p>
               )}
             </div>
 
@@ -826,29 +826,29 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               className={`rounded-2xl p-4 sm:p-5 border transition-all cursor-pointer relative overflow-hidden ${
                 activityStats.taller.groupsCount > 0 
                   ? activityFilter === 'T'
-                    ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-500/30 shadow-md'
-                    : 'bg-white hover:bg-amber-50/40 border-amber-200/80 hover:border-amber-300 shadow-2xs'
-                  : 'bg-slate-50/60 border-slate-200 opacity-60'
+                    ? 'bg-amber-50/80 dark:bg-amber-950/50 border-amber-400 dark:border-amber-500 ring-2 ring-amber-500/30 shadow-md'
+                    : 'bg-white dark:bg-slate-800/70 hover:bg-amber-50/40 dark:hover:bg-amber-950/30 border-amber-200/80 dark:border-amber-800/60 hover:border-amber-300 shadow-2xs'
+                  : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    activityStats.taller.groupsCount > 0 ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-200 text-slate-400'
+                    activityStats.taller.groupsCount > 0 ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                   }`}>
                     <Wrench className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900">Modalidad</div>
-                    <h4 className="text-base font-bold text-slate-900">Taller (T)</h4>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">Modalidad</div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">Taller (T)</h4>
                   </div>
                 </div>
                 {activityStats.taller.groupsCount > 0 ? (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 font-mono">
                     {activityStats.taller.groupsCount} {activityStats.taller.groupsCount === 1 ? 'grupo' : 'grupos'}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                     Sin talleres T
                   </span>
                 )}
@@ -857,28 +857,28 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               {activityStats.taller.groupsCount > 0 ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-black text-slate-900 font-mono">
+                    <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
                       {activityStats.taller.hoursPerGroupFormatted}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-500">por alumno</span>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">por alumno</span>
                   </div>
 
-                  <div className="pt-2 border-t border-amber-100 grid grid-cols-2 gap-2 text-xs">
+                  <div className="pt-2 border-t border-amber-100 dark:border-amber-900/50 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Total Impartido</span>
-                      <span className="font-bold text-slate-800 font-mono">{activityStats.taller.totalHoursFormatted} totales</span>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Total Impartido</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">{activityStats.taller.totalHoursFormatted} totales</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Subgrupos</span>
-                      <span className="font-bold text-amber-800 font-mono">{activityStats.taller.subgroupsCount} subgrupos</span>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Subgrupos</span>
+                      <span className="font-bold text-amber-800 dark:text-amber-300 font-mono">{activityStats.taller.subgroupsCount} subgrupos</span>
                     </div>
                   </div>
 
                   {activityStats.taller.roomsList.length > 0 && (
-                    <div className="text-[11px] text-slate-600 flex items-center gap-1.5 flex-wrap">
-                      <Building2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      <span className="text-slate-400 font-medium">Espacios:</span>
-                      <span className="font-semibold text-slate-800 font-mono">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5 flex-wrap">
+                      <Building2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">Espacios:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">
                         {activityStats.taller.roomsList.slice(0, 4).join(', ')}
                         {activityStats.taller.roomsList.length > 4 ? ` +${activityStats.taller.roomsList.length - 4}` : ''}
                       </span>
@@ -886,14 +886,14 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                   )}
 
                   <div className="pt-1 flex items-center justify-between text-[11px]">
-                    <span className={`font-semibold ${activityFilter === 'T' ? 'text-amber-700' : 'text-slate-400'}`}>
+                    <span className={`font-semibold ${activityFilter === 'T' ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400 dark:text-slate-500'}`}>
                       {activityFilter === 'T' ? '✓ Filtrando en horario' : 'Clic para filtrar horario'}
                     </span>
-                    <span className="text-amber-700 font-bold">{activityStats.taller.sessionsCount} sesiones</span>
+                    <span className="text-amber-700 dark:text-amber-400 font-bold">{activityStats.taller.sessionsCount} sesiones</span>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 py-3">Esta asignatura no incluye horas de taller en su estructura docente.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 py-3">Esta asignatura no incluye horas de taller en su estructura docente.</p>
               )}
             </div>
 
@@ -903,29 +903,29 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               className={`rounded-2xl p-4 sm:p-5 border transition-all cursor-pointer relative overflow-hidden ${
                 activityStats.laboratorio.groupsCount > 0 
                   ? activityFilter === 'L'
-                    ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-500/30 shadow-md'
-                    : 'bg-white hover:bg-emerald-50/40 border-emerald-200/80 hover:border-emerald-300 shadow-2xs'
-                  : 'bg-slate-50/60 border-slate-200 opacity-60'
+                    ? 'bg-emerald-50/80 dark:bg-emerald-950/50 border-emerald-400 dark:border-emerald-500 ring-2 ring-emerald-500/30 shadow-md'
+                    : 'bg-white dark:bg-slate-800/70 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-800/60 hover:border-emerald-300 shadow-2xs'
+                  : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    activityStats.laboratorio.groupsCount > 0 ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-200 text-slate-400'
+                    activityStats.laboratorio.groupsCount > 0 ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                   }`}>
                     <FlaskConical className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">Modalidad</div>
-                    <h4 className="text-base font-bold text-slate-900">Laboratorio (L)</h4>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">Modalidad</div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">Laboratorio (L)</h4>
                   </div>
                 </div>
                 {activityStats.laboratorio.groupsCount > 0 ? (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-800 dark:text-emerald-200 font-mono">
                     {activityStats.laboratorio.groupsCount} {activityStats.laboratorio.groupsCount === 1 ? 'grupo' : 'grupos'}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                     Sin laboratorios L
                   </span>
                 )}
@@ -934,28 +934,28 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               {activityStats.laboratorio.groupsCount > 0 ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-black text-slate-900 font-mono">
+                    <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
                       {activityStats.laboratorio.hoursPerGroupFormatted}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-500">por subgrupo</span>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">por subgrupo</span>
                   </div>
 
-                  <div className="pt-2 border-t border-emerald-100 grid grid-cols-2 gap-2 text-xs">
+                  <div className="pt-2 border-t border-emerald-100 dark:border-emerald-900/50 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Total Impartido</span>
-                      <span className="font-bold text-slate-800 font-mono">{activityStats.laboratorio.totalHoursFormatted} totales</span>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Total Impartido</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">{activityStats.laboratorio.totalHoursFormatted} totales</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase text-slate-400 block font-semibold">Subgrupos Lab</span>
-                      <span className="font-bold text-emerald-800 font-mono">{activityStats.laboratorio.subgroupsCount} subgrupos</span>
+                      <span className="text-[10px] uppercase text-slate-400 dark:text-slate-500 block font-semibold">Subgrupos Lab</span>
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300 font-mono">{activityStats.laboratorio.subgroupsCount} subgrupos</span>
                     </div>
                   </div>
 
                   {activityStats.laboratorio.roomsList.length > 0 && (
-                    <div className="text-[11px] text-slate-600 flex items-center gap-1.5 flex-wrap">
-                      <Building2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span className="text-slate-400 font-medium">Laboratorios:</span>
-                      <span className="font-semibold text-slate-800 font-mono">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5 flex-wrap">
+                      <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span className="text-slate-400 dark:text-slate-500 font-medium">Laboratorios:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">
                         {activityStats.laboratorio.roomsList.slice(0, 4).join(', ')}
                         {activityStats.laboratorio.roomsList.length > 4 ? ` +${activityStats.laboratorio.roomsList.length - 4}` : ''}
                       </span>
@@ -963,14 +963,14 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                   )}
 
                   <div className="pt-1 flex items-center justify-between text-[11px]">
-                    <span className={`font-semibold ${activityFilter === 'L' ? 'text-emerald-700' : 'text-slate-400'}`}>
+                    <span className={`font-semibold ${activityFilter === 'L' ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-400 dark:text-slate-500'}`}>
                       {activityFilter === 'L' ? '✓ Filtrando en horario' : 'Clic para filtrar horario'}
                     </span>
-                    <span className="text-emerald-700 font-bold">{activityStats.laboratorio.sessionsCount} sesiones</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-bold">{activityStats.laboratorio.sessionsCount} sesiones</span>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 py-3">Esta asignatura no tiene sesiones prácticas de laboratorio registradas.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 py-3">Esta asignatura no tiene sesiones prácticas de laboratorio registradas.</p>
               )}
             </div>
 
@@ -982,8 +982,8 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               onClick={() => setActivityFilter(activityFilter === 'P' ? 'ALL' : 'P')}
               className={`rounded-2xl p-4 border transition-all cursor-pointer ${
                 activityFilter === 'P'
-                  ? 'bg-purple-50 border-purple-400 ring-2 ring-purple-500/30 shadow-md'
-                  : 'bg-purple-50/40 hover:bg-purple-50 border-purple-200/80 shadow-2xs'
+                  ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-400 dark:border-purple-500 ring-2 ring-purple-500/30 shadow-md'
+                  : 'bg-purple-50/40 dark:bg-purple-950/30 hover:bg-purple-50 dark:hover:bg-purple-950/50 border-purple-200/80 dark:border-purple-800/60 shadow-2xs'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -993,12 +993,12 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900">Prácticas de Campo / Práctica (P)</span>
-                      <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-purple-100 text-purple-800 font-mono">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">Prácticas de Campo / Práctica (P)</span>
+                      <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-purple-100 dark:bg-purple-900/70 text-purple-800 dark:text-purple-200 font-mono">
                         {activityStats.practica.groupsCount} {activityStats.practica.groupsCount === 1 ? 'grupo' : 'grupos'} • {activityStats.practica.subgroupsCount} subgrupos
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Esta asignatura complementa sus horas con salidas de campo o prácticas aplicadas.
                     </p>
                   </div>
@@ -1006,17 +1006,17 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
                 <div className="flex items-center gap-4 text-xs font-mono shrink-0">
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block font-sans">Por alumno</span>
-                    <span className="font-bold text-purple-900">{activityStats.practica.hoursPerGroupFormatted}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-sans">Por alumno</span>
+                    <span className="font-bold text-purple-900 dark:text-purple-200">{activityStats.practica.hoursPerGroupFormatted}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block font-sans">Total Impartido</span>
-                    <span className="font-bold text-purple-900">{activityStats.practica.totalHoursFormatted}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-sans">Total Impartido</span>
+                    <span className="font-bold text-purple-900 dark:text-purple-200">{activityStats.practica.totalHoursFormatted}</span>
                   </div>
                   <button
                     type="button"
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      activityFilter === 'P' ? 'bg-purple-700 text-white' : 'bg-white text-purple-700 border border-purple-200'
+                      activityFilter === 'P' ? 'bg-purple-700 text-white' : 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700'
                     }`}
                   >
                     {activityFilter === 'P' ? 'Filtrado activo' : 'Ver en horario'}
@@ -1028,35 +1028,35 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
           {/* Desglose Detallado por Grupo Individual (Acordeón expandible) */}
           {activityStats.groupBreakdowns.length > 0 && (
-            <div className="border border-slate-200 rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setShowGroupBreakdown(!showGroupBreakdown)}
-                className="w-full px-4 py-3.5 bg-slate-50/80 hover:bg-slate-100 text-left flex items-center justify-between transition-colors cursor-pointer"
+                className="w-full px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-left flex items-center justify-between transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-slate-600" />
-                  <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <Users className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                     Desglose por Grupo ({activityStats.groupBreakdowns.length} {activityStats.groupBreakdowns.length === 1 ? 'grupo' : 'grupos'} disponibles)
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
+                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-semibold">
                   <span>{showGroupBreakdown ? 'Ocultar detalles de grupos' : 'Ver horas por grupo'}</span>
                   {showGroupBreakdown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </div>
               </button>
 
               {showGroupBreakdown && (
-                <div className="p-4 divide-y divide-slate-100 bg-white">
+                <div className="p-4 divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
                     {activityStats.groupBreakdowns.map(g => (
-                      <div key={g.grupo} className="rounded-xl border border-slate-200 p-3.5 bg-slate-50/40 hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 mb-2.5">
+                      <div key={g.grupo} className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 bg-slate-50/40 dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-700 mb-2.5">
                           <div className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
-                            <span className="text-sm font-bold text-slate-900 font-mono">Grupo {g.grupo}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100 font-mono">Grupo {g.grupo}</span>
                           </div>
-                          <span className="text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 font-mono">
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono">
                             {g.studentTotal} h / sem alumno
                           </span>
                         </div>
@@ -1064,20 +1064,20 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                         <div className="space-y-2 text-xs">
                           {/* Clase C */}
                           {g.clase ? (
-                            <div className="flex items-start justify-between gap-1 text-slate-700">
-                              <span className="flex items-center gap-1 text-blue-700 font-semibold">
+                            <div className="flex items-start justify-between gap-1 text-slate-700 dark:text-slate-300">
+                              <span className="flex items-center gap-1 text-blue-700 dark:text-blue-400 font-semibold">
                                 <BookOpen className="w-3.5 h-3.5 shrink-0" />
                                 <span>Clase (C):</span>
                               </span>
                               <div className="text-right">
                                 <span className="font-mono font-bold">{g.clase.hoursStudent} h</span>
-                                <span className="text-[10px] text-slate-400 block font-mono">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-mono">
                                   {g.clase.rooms.join(', ') || 'Sin aula'}
                                 </span>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                            <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
                               <span>Clase (C):</span>
                               <span>0 h</span>
                             </div>
@@ -1085,20 +1085,20 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
                           {/* Taller T */}
                           {g.taller ? (
-                            <div className="flex items-start justify-between gap-1 text-slate-700">
-                              <span className="flex items-center gap-1 text-amber-800 font-semibold">
-                                <Wrench className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                            <div className="flex items-start justify-between gap-1 text-slate-700 dark:text-slate-300">
+                              <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400 font-semibold">
+                                <Wrench className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
                                 <span>Taller (T):</span>
                               </span>
                               <div className="text-right">
                                 <span className="font-mono font-bold">{g.taller.hoursStudent} h</span>
-                                <span className="text-[10px] text-amber-700 block font-mono">
+                                <span className="text-[10px] text-amber-700 dark:text-amber-400/80 block font-mono">
                                   {g.taller.subgroups.length} {g.taller.subgroups.length === 1 ? 'subgpo' : 'subgpos'} ({g.taller.rooms.join(', ') || 'Espacio T'})
                                 </span>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                            <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
                               <span>Taller (T):</span>
                               <span>0 h</span>
                             </div>
@@ -1106,20 +1106,20 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
                           {/* Laboratorio L */}
                           {g.laboratorio ? (
-                            <div className="flex items-start justify-between gap-1 text-slate-700">
-                              <span className="flex items-center gap-1 text-emerald-800 font-semibold">
-                                <FlaskConical className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                            <div className="flex items-start justify-between gap-1 text-slate-700 dark:text-slate-300">
+                              <span className="flex items-center gap-1 text-emerald-800 dark:text-emerald-400 font-semibold">
+                                <FlaskConical className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                                 <span>Laboratorio (L):</span>
                               </span>
                               <div className="text-right">
-                                <span className="font-mono font-bold text-emerald-900">{g.laboratorio.hoursStudent} h</span>
-                                <span className="text-[10px] text-emerald-700 block font-mono">
+                                <span className="font-mono font-bold text-emerald-900 dark:text-emerald-300">{g.laboratorio.hoursStudent} h</span>
+                                <span className="text-[10px] text-emerald-700 dark:text-emerald-400/80 block font-mono">
                                   {g.laboratorio.subgroups.length} {g.laboratorio.subgroups.length === 1 ? 'subgpo' : 'subgpos'} ({g.laboratorio.rooms.join(', ') || 'Lab'})
                                 </span>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                            <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
                               <span>Laboratorio (L):</span>
                               <span>0 h</span>
                             </div>
@@ -1127,14 +1127,14 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
                           {/* Práctica P */}
                           {g.practica && (
-                            <div className="flex items-start justify-between gap-1 text-slate-700">
-                              <span className="flex items-center gap-1 text-purple-800 font-semibold">
-                                <Compass className="w-3.5 h-3.5 shrink-0 text-purple-600" />
+                            <div className="flex items-start justify-between gap-1 text-slate-700 dark:text-slate-300">
+                              <span className="flex items-center gap-1 text-purple-800 dark:text-purple-400 font-semibold">
+                                <Compass className="w-3.5 h-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
                                 <span>Práctica (P):</span>
                               </span>
                               <div className="text-right">
-                                <span className="font-mono font-bold text-purple-900">{g.practica.hoursStudent} h</span>
-                                <span className="text-[10px] text-purple-700 block font-mono">
+                                <span className="font-mono font-bold text-purple-900 dark:text-purple-300">{g.practica.hoursStudent} h</span>
+                                <span className="text-[10px] text-purple-700 dark:text-purple-400/80 block font-mono">
                                   {g.practica.subgroups.length} {g.practica.subgroups.length === 1 ? 'subgpo' : 'subgpos'}
                                 </span>
                               </div>
@@ -1144,13 +1144,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                         </div>
 
                         {/* Docentes a cargo del grupo */}
-                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 text-[10px] text-slate-500 truncate" title={[
+                        <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-[10px] text-slate-500 dark:text-slate-400 truncate" title={[
                           ...(g.clase?.teachers || []),
                           ...(g.taller?.teachers || []),
                           ...(g.laboratorio?.teachers || []),
                           ...(g.practica?.teachers || [])
                         ].filter((v, i, a) => a.indexOf(v) === i).join(' • ')}>
-                          <span className="font-semibold text-slate-700">Docentes: </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">Docentes: </span>
                           {[
                             ...(g.clase?.teachers || []),
                             ...(g.taller?.teachers || []),
@@ -1171,10 +1171,10 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
 
       {/* Selector de Filtro de Modalidad sobre el Calendario */}
       {selectedSubject && activityStats && (
-        <div className="bg-slate-100 p-2.5 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+        <div className="bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-slate-800 p-2.5 rounded-2xl flex items-center justify-between gap-3 flex-wrap transition-colors duration-200">
           <div className="flex items-center gap-2 pl-2">
-            <ListFilter className="w-4 h-4 text-slate-600" />
-            <span className="text-xs font-bold text-slate-800">Filtrar actividades en el horario:</span>
+            <ListFilter className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Filtrar actividades en el horario:</span>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -1183,13 +1183,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
               onClick={() => setActivityFilter('ALL')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activityFilter === 'ALL'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-200'
+                  ? 'bg-slate-900 dark:bg-cyan-600 text-white shadow-xs'
+                  : 'bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
               }`}
             >
               <span>Todas las modalidades</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                activityFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                activityFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}>
                 {subjectSessions.length}
               </span>
@@ -1202,13 +1202,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activityFilter === 'C'
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-white hover:bg-blue-50 text-blue-900 border border-blue-200'
+                    : 'bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>Solo Clase (C)</span>
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                  activityFilter === 'C' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                  activityFilter === 'C' ? 'bg-white/20 text-white' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                 }`}>
                   {activityStats.clase.sessionsCount}
                 </span>
@@ -1222,13 +1222,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activityFilter === 'T'
                     ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-white hover:bg-amber-50 text-amber-900 border border-amber-200'
+                    : 'bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/50 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                 }`}
               >
                 <Wrench className="w-3.5 h-3.5" />
                 <span>Solo Taller (T)</span>
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                  activityFilter === 'T' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                  activityFilter === 'T' ? 'bg-white/20 text-white' : 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
                 }`}>
                   {activityStats.taller.sessionsCount}
                 </span>
@@ -1242,13 +1242,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activityFilter === 'L'
                     ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-200'
+                    : 'bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                 }`}
               >
                 <FlaskConical className="w-3.5 h-3.5" />
                 <span>Solo Laboratorio (L)</span>
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                  activityFilter === 'L' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                  activityFilter === 'L' ? 'bg-white/20 text-white' : 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
                 }`}>
                   {activityStats.laboratorio.sessionsCount}
                 </span>
@@ -1262,13 +1262,13 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activityFilter === 'P'
                     ? 'bg-purple-600 text-white shadow-xs'
-                    : 'bg-white hover:bg-purple-50 text-purple-900 border border-purple-200'
+                    : 'bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-950/50 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5" />
                 <span>Solo Práctica (P)</span>
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                  activityFilter === 'P' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800'
+                  activityFilter === 'P' ? 'bg-white/20 text-white' : 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
                 }`}>
                   {activityStats.practica.sessionsCount}
                 </span>
@@ -1295,10 +1295,10 @@ export const AsignaturaView: React.FC<AsignaturaViewProps> = ({
           onOpenPrintModal={() => onOpenPrintModal?.('asignatura', selectedSubject)}
         />
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
-          <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-700">Selecciona una Asignatura</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400">
+          <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">Selecciona una Asignatura</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
             {levelFilter === 'LICENCIATURA' 
               ? 'Busca cualquier unidad de aprendizaje de Licenciatura para ver los horarios de sus grupos y salones.'
               : levelFilter === 'POSGRADO'

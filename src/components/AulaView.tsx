@@ -49,6 +49,7 @@ import {
   getBuildingById 
 } from '../data/campusBuildings';
 import { BuildingProfessorsSelector } from './BuildingProfessorsSelector';
+import { useTheme } from '../context/ThemeContext';
 
 interface AulaViewProps {
   sessions: ScheduleSession[];
@@ -88,6 +89,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
   onSelectTeacher,
   selectedEntity
 }) => {
+  const { isDark } = useTheme();
   const [selectedRoom, setSelectedRoom] = useState<string>(selectedEntity || classrooms[0] || '');
   const [filterQuery, setFilterQuery] = useState<string>('');
   const [selectedBuildingFilter, setSelectedBuildingFilter] = useState<string>('ALL'); // 'ALL' or 'E-21', etc.
@@ -320,29 +322,29 @@ export const AulaView: React.FC<AulaViewProps> = ({
     <div className="space-y-6">
       
       {/* Visualización Recharts: Porcentaje de Ocupación Semanal por Edificio */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-colors duration-200">
         
         {/* Chart Header Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 via-white to-cyan-50/30">
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 via-white to-cyan-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-cyan-950/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-cyan-900 text-cyan-300 flex items-center justify-center shrink-0 shadow-xs">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm font-bold text-slate-900 font-display flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 font-display flex items-center gap-2">
                   <span>Porcentaje de Ocupación Semanal por Edificio</span>
                 </h3>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-mono">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 font-mono">
                   Recharts • 07:00 a 21:00 h
                 </span>
                 {selectedBuildingFilter !== 'ALL' && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-white font-mono animate-in fade-in">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-900 dark:bg-cyan-600 text-white font-mono animate-in fade-in">
                     Filtro activo: {selectedBuildingFilter}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Capacidad utilizada por cada inmueble del campus FCM durante la semana (haz clic en una barra para filtrar).
               </p>
             </div>
@@ -351,14 +353,14 @@ export const AulaView: React.FC<AulaViewProps> = ({
           {/* Mode Controls & Collapse Button */}
           <div className="flex items-center gap-2 flex-wrap self-end md:self-auto">
             {/* Toggle View Mode */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => setChartViewMode('weekly')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   chartViewMode === 'weekly'
-                    ? 'bg-white text-cyan-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-cyan-900 dark:text-cyan-300 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
                 title="Ver porcentaje promedio acumulado de toda la semana"
               >
@@ -369,8 +371,8 @@ export const AulaView: React.FC<AulaViewProps> = ({
                 onClick={() => setChartViewMode('daily')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   chartViewMode === 'daily'
-                    ? 'bg-white text-cyan-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-cyan-900 dark:text-cyan-300 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
                 title="Ver desglose comparativo de Lunes a Viernes"
               >
@@ -382,7 +384,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
             <button
               type="button"
               onClick={() => setIsChartExpanded(!isChartExpanded)}
-              className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
               title={isChartExpanded ? "Minimizar gráfico" : "Expandir gráfico"}
               aria-label="Toggle Gráfico"
             >
@@ -396,24 +398,24 @@ export const AulaView: React.FC<AulaViewProps> = ({
           <div className="p-4 sm:p-5 space-y-4">
             
             {/* Chart Legend & Status Thresholds */}
-            <div className="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-100 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-semibold text-slate-700">Nivel de saturación semanal:</span>
-                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">Nivel de saturación semanal:</span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
                   &ge; 50% Alta Demanda
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
                   35% &ndash; 49% Moderada
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
                   &lt; 35% Alta Disponibilidad
                 </span>
               </div>
 
-              <div className="text-[11px] text-slate-400 italic">
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 italic">
                 * Calculado sobre 70 hrs operativas/semana por aula (07:00 a 21:00 h).
               </div>
             </div>
@@ -426,10 +428,10 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     data={buildingOccupancyList}
                     margin={{ top: 15, right: 10, left: -10, bottom: 25 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#f1f5f9'} />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                      tick={{ fontSize: 11, fill: isDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}
                       interval={0}
                       angle={-15}
                       textAnchor="end"
@@ -437,7 +439,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     <YAxis
                       unit="%"
                       domain={[0, 100]}
-                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      tick={{ fontSize: 11, fill: isDark ? '#94a3b8' : '#64748b' }}
                     />
                     <Tooltip
                       content={({ active, payload, label }) => {
@@ -523,10 +525,10 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     data={buildingOccupancyList}
                     margin={{ top: 15, right: 10, left: -10, bottom: 25 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#f1f5f9'} />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 11, fill: '#334155', fontWeight: 700 }}
+                      tick={{ fontSize: 11, fill: isDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}
                       interval={0}
                       angle={-15}
                       textAnchor="end"
@@ -534,7 +536,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     <YAxis
                       unit="%"
                       domain={[0, 100]}
-                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      tick={{ fontSize: 11, fill: isDark ? '#94a3b8' : '#64748b' }}
                     />
                     <Tooltip
                       content={({ active, payload, label }) => {
@@ -589,64 +591,64 @@ export const AulaView: React.FC<AulaViewProps> = ({
 
             {/* Quick KPI Highlights Summary Bar */}
             {occupancyHighlights && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 
                 <div 
                   onClick={() => handleSelectBuilding(occupancyHighlights.mostOccupied.buildingId)}
-                  className="p-3 rounded-xl bg-rose-50/70 border border-rose-200/80 cursor-pointer hover:bg-rose-100/70 transition-colors"
+                  className="p-3 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-800/50 cursor-pointer hover:bg-rose-100/70 dark:hover:bg-rose-950/50 transition-colors"
                   title="Haz clic para filtrar este edificio"
                 >
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-rose-700">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-rose-700 dark:text-rose-400">
                     <TrendingUp className="w-3.5 h-3.5" />
                     <span>Mayor Ocupación</span>
                   </div>
-                  <div className="text-sm font-black text-rose-950 font-display mt-0.5 truncate">
+                  <div className="text-sm font-black text-rose-950 dark:text-rose-200 font-display mt-0.5 truncate">
                     {occupancyHighlights.mostOccupied.name} — {occupancyHighlights.mostOccupied.weeklyPercentage}%
                   </div>
-                  <div className="text-[11px] text-rose-800">
+                  <div className="text-[11px] text-rose-800 dark:text-rose-300/80">
                     {occupancyHighlights.mostOccupied.occupiedHours} h clase / semana
                   </div>
                 </div>
 
                 <div 
                   onClick={() => handleSelectBuilding(occupancyHighlights.leastOccupied.buildingId)}
-                  className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 cursor-pointer hover:bg-emerald-100/70 transition-colors"
+                  className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100/70 dark:hover:bg-emerald-950/50 transition-colors"
                   title="Haz clic para filtrar este edificio"
                 >
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-emerald-700">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Mayor Disponibilidad</span>
                   </div>
-                  <div className="text-sm font-black text-emerald-950 font-display mt-0.5 truncate">
+                  <div className="text-sm font-black text-emerald-950 dark:text-emerald-200 font-display mt-0.5 truncate">
                     {occupancyHighlights.leastOccupied.name} — {occupancyHighlights.leastOccupied.weeklyPercentage}%
                   </div>
-                  <div className="text-[11px] text-emerald-800">
+                  <div className="text-[11px] text-emerald-800 dark:text-emerald-300/80">
                     {occupancyHighlights.leastOccupied.roomCount} aulas con holgura
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-cyan-50/70 border border-cyan-200/80">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-cyan-800">
+                <div className="p-3 rounded-xl bg-cyan-50/70 dark:bg-cyan-950/30 border border-cyan-200/80 dark:border-cyan-800/50">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-cyan-800 dark:text-cyan-400">
                     <BarChart3 className="w-3.5 h-3.5" />
                     <span>Promedio Campus FCM</span>
                   </div>
-                  <div className="text-sm font-black text-cyan-950 font-display mt-0.5 font-mono">
+                  <div className="text-sm font-black text-cyan-950 dark:text-cyan-200 font-display mt-0.5 font-mono">
                     {occupancyHighlights.campusAvg}% semanal
                   </div>
-                  <div className="text-[11px] text-cyan-900">
+                  <div className="text-[11px] text-cyan-900 dark:text-cyan-300/80">
                     Uso regular de espacios
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-700">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300">
                     <Building2 className="w-3.5 h-3.5" />
                     <span>Edificios Monitoreados</span>
                   </div>
-                  <div className="text-sm font-black text-slate-900 font-display mt-0.5 font-mono">
+                  <div className="text-sm font-black text-slate-900 dark:text-slate-100 font-display mt-0.5 font-mono">
                     {occupancyHighlights.buildingCount} Inmuebles
                   </div>
-                  <div className="text-[11px] text-slate-600">
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
                     FCM UABC Ensenada
                   </div>
                 </div>
@@ -660,23 +662,23 @@ export const AulaView: React.FC<AulaViewProps> = ({
       </div>
 
       {/* Building Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs transition-colors duration-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-cyan-900 text-cyan-300 flex items-center justify-center shrink-0">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>Filtro por Edificio / Inmueble FCM</span>
                 {activeBuilding && (
-                  <span className="text-[10px] bg-cyan-100 text-cyan-800 font-mono px-2 py-0.2 rounded-full font-bold">
+                  <span className="text-[10px] bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 font-mono px-2 py-0.2 rounded-full font-bold">
                     {activeBuilding.id}
                   </span>
                 )}
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Selecciona un edificio para filtrar sus aulas y consultar su plantilla docente para Gmail.
               </p>
             </div>
@@ -687,9 +689,9 @@ export const AulaView: React.FC<AulaViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenMapModal(activeBuilding?.id || 'E-21')}
-                className="px-3 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/70 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Map className="w-3.5 h-3.5 text-cyan-600" />
+                <Map className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 <span>Ver Mapa Interactivo del Campus</span>
               </button>
             )}
@@ -700,8 +702,8 @@ export const AulaView: React.FC<AulaViewProps> = ({
                 onClick={() => setShowBuildingProfessors(!showBuildingProfessors)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border ${
                   showBuildingProfessors
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                    ? 'bg-slate-900 dark:bg-cyan-600 text-white border-slate-900 dark:border-cyan-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 <Mail className="w-3.5 h-3.5 text-cyan-500" />
@@ -719,8 +721,8 @@ export const AulaView: React.FC<AulaViewProps> = ({
             onClick={() => handleSelectBuilding('ALL')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
               selectedBuildingFilter === 'ALL'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-slate-900 dark:bg-cyan-600 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             Todas las Aulas ({classrooms.length})
@@ -737,7 +739,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                   isSelected
                     ? 'bg-cyan-700 text-white shadow-md shadow-cyan-700/20 ring-2 ring-cyan-500/50'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    : 'bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                 }`}
               >
                 <span>{b.id}</span>
@@ -746,16 +748,16 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     isSelected 
                       ? 'bg-white/20 text-white' 
                       : bData.weeklyPercentage >= 50
-                      ? 'bg-rose-100 text-rose-700'
+                      ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300'
                       : bData.weeklyPercentage >= 35
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                      : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
                   }`}>
                     {bData.weeklyPercentage}%
                   </span>
                 )}
                 <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-600'
+                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}>
                   {b.rooms.length} sal.
                 </span>
@@ -778,7 +780,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
       )}
 
       {/* Search & Selection Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs search-container">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs search-container transition-colors duration-200">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="max-w-2xl flex-1">
             <AutocompleteInput
@@ -803,7 +805,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             {activeBuilding && (
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-semibold text-slate-500">Salones en {activeBuilding.id}:</span>
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Salones en {activeBuilding.id}:</span>
                 {activeBuilding.rooms.map(r => (
                   <button
                     key={r}
@@ -812,7 +814,7 @@ export const AulaView: React.FC<AulaViewProps> = ({
                     className={`px-2 py-1 rounded text-xs font-mono font-bold transition-all cursor-pointer ${
                       selectedRoom === r
                         ? 'bg-cyan-700 text-white'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     {r}
@@ -825,9 +827,9 @@ export const AulaView: React.FC<AulaViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenDirectory('aulas')}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-slate-200 shadow-2xs shrink-0 cursor-pointer h-[42px]"
+                className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 cursor-pointer h-[42px]"
               >
-                <Layers className="w-4 h-4 text-cyan-700" />
+                <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 <span>Catálogo General</span>
               </button>
             )}
@@ -990,10 +992,10 @@ export const AulaView: React.FC<AulaViewProps> = ({
           onOpenPrintModal={() => onOpenPrintModal?.('aula', selectedRoom)}
         />
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
-          <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-700">Selecciona un Aula o Espacio</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400">
+          <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">Selecciona un Aula o Espacio</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
             Utiliza el filtro de edificio superior o el buscador para ver las clases y horarios asignados a este salón.
           </p>
         </div>

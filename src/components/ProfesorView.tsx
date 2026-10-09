@@ -74,7 +74,7 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
     <div className="space-y-6">
       
       {/* Search & Selection Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs search-container">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs search-container transition-colors duration-200">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="max-w-2xl flex-1">
             <AutocompleteInput
@@ -100,9 +100,9 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenDirectory('profesores')}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 shadow-2xs shrink-0 cursor-pointer h-[42px]"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 cursor-pointer h-[42px]"
             >
-              <Layers className="w-4 h-4 text-cyan-700" />
+              <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               <span>Ver Lista de Profesores ({professors.length})</span>
             </button>
           )}
@@ -219,10 +219,10 @@ export const ProfesorView: React.FC<ProfesorViewProps> = ({
           onOpenPrintModal={() => onOpenPrintModal?.('profesor', selectedProf)}
         />
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
-          <User className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-700">Selecciona un Profesor</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400">
+          <User className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">Selecciona un Profesor</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
             Utiliza el buscador superior para consultar el horario semanal del docente.
           </p>
         </div>

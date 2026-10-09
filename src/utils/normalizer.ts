@@ -144,6 +144,7 @@ export function normalizeClassroom(rawRoom: string | undefined | null): string {
   if (upper === 'SB' || upper.includes('SALA DE BIOLOG') || upper.includes('SALA DE BIOLOGÍA')) return 'SB';
   if (upper.includes('GIMNASIO')) return 'Gimnasio';
   if (upper === 'DIE' || upper.includes('SALA DIE')) return 'DIE';
+  if (upper === 'DID' || upper.includes('SALA DID')) return 'DID';
   if (upper.includes('DIB-E') || upper.includes('DIB')) return 'DIB-E';
   if (upper.includes('S7') || upper.includes('SALÓN 7') || upper.includes('SALON 7')) return 'S7';
   if (upper.includes('S2') || upper.includes('SALÓN 2') || upper.includes('SALON 2')) return 'S2';
