@@ -154,15 +154,18 @@ export function applyCorrections(
     const diaActual = normalizeDay(corr.diaActual);
     const timeActual = parseTimeRange(corr.horarioActual);
     const roomActual = normalizeClassroom(corr.salonActual);
+    const isAlta = (!corr.diaActual && !corr.horarioActual && !corr.salonActual) || 
+                   (corr.tipoAjuste && corr.tipoAjuste.toLowerCase().includes('alta'));
 
     // Buscar el registro original más específico
     let matchedIndices: number[] = [];
 
-    // Estrategia 1: Coincidencia por Profesor + Asignatura + Día (si existe) + Horario (si existe) + Tipo de actividad
-    for (let i = 0; i < sessions.length; i++) {
-      const s = sessions[i];
+    if (!isAlta) {
+      // Estrategia 1: Coincidencia por Profesor + Asignatura + Día (si existe) + Horario (si existe) + Tipo de actividad
+      for (let i = 0; i < sessions.length; i++) {
+        const s = sessions[i];
 
-      const matchProf = profKey ? isSameProfessor(s.profesor, profKey) : true;
+        const matchProf = profKey ? isSameProfessor(s.profesor, profKey) : true;
       const matchAsig = asigKey ? isSameSubject(s.asignatura, asigKey) : true;
       const matchGrp = grpKey && s.grupo ? isSameGroup(s.grupo, grpKey) : true;
       const matchDay = diaActual ? s.dia === diaActual : true;
@@ -243,6 +246,7 @@ export function applyCorrections(
           }
         }
       }
+    }
     }
 
     // Si es una cancelación, remover los registros encontrados
@@ -846,9 +850,7 @@ export async function loadConsolidatedSchedule(): Promise<ConsolidatedData> {
     correctionsMap.set(c.id, c);
   }
   for (const c of ADDITIONAL_CORRECTIONS) {
-    if (!correctionsMap.has(c.id)) {
-      correctionsMap.set(c.id, c);
-    }
+    correctionsMap.set(c.id, c);
   }
   const corrections = Array.from(correctionsMap.values());
 

@@ -11,6 +11,7 @@ import {
   findAvailableProfessors,
   findByMinimumDuration
 } from '../utils/availability';
+import { timeToMinutes, minutesToTime } from '../utils/normalizer';
 
 interface DisponibilidadViewProps {
   sessions: ScheduleSession[];
@@ -23,15 +24,24 @@ type SubTab = 'dashboard' | 'buscar_aulas' | 'buscar_profs' | 'aula_dia' | 'prof
 
 const DAYS = CONFIG.CALENDAR.DAYS;
 
-// Time options from 07:00 to 21:00 in 30-min steps
+// Time options from 07:00 to 22:00 in 30-min steps (jornada completa sin cortes)
 const TIME_OPTIONS: string[] = [];
-for (let h = 7; h <= 21; h++) {
+for (let h = 7; h <= 22; h++) {
   const hStr = h.toString().padStart(2, '0');
   TIME_OPTIONS.push(`${hStr}:00`);
-  if (h < 21) {
+  if (h < 22) {
     TIME_OPTIONS.push(`${hStr}:30`);
   }
 }
+
+const PRESET_RANGES = [
+  { label: 'Día completo (07:00 - 21:00)', start: '07:00', end: '21:00' },
+  { label: 'Turno Matutino (07:00 - 13:00)', start: '07:00', end: '13:00' },
+  { label: 'Turno Intermedio (11:00 - 15:00)', start: '11:00', end: '15:00' },
+  { label: 'Turno Vespertino (13:00 - 19:00)', start: '13:00', end: '19:00' },
+  { label: '13:00 - 14:00', start: '13:00', end: '14:00' },
+  { label: '12:00 - 16:00', start: '12:00', end: '16:00' }
+];
 
 export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
   sessions,
@@ -45,6 +55,29 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
   const [selectedDay, setSelectedDay] = useState<DayName>('Lunes');
   const [startTime, setStartTime] = useState<string>('09:00');
   const [endTime, setEndTime] = useState<string>('11:00');
+  const [timeInputMode, setTimeInputMode] = useState<'dropdown' | 'manual'>('dropdown');
+
+  const handleStartTimeChange = (val: string) => {
+    setStartTime(val);
+    if (!val) return;
+    const sMin = timeToMinutes(val);
+    const eMin = timeToMinutes(endTime);
+    if (sMin >= eMin) {
+      const nextEndMin = Math.min(22 * 60, sMin + 60);
+      setEndTime(minutesToTime(nextEndMin));
+    }
+  };
+
+  const handleEndTimeChange = (val: string) => {
+    setEndTime(val);
+    if (!val) return;
+    const eMin = timeToMinutes(val);
+    const sMin = timeToMinutes(startTime);
+    if (eMin <= sMin) {
+      const prevStartMin = Math.max(7 * 60, eMin - 60);
+      setStartTime(minutesToTime(prevStartMin));
+    }
+  };
   
   // Specific Entity states
   const [selectedRoom, setSelectedRoom] = useState<string>(classrooms[0] || '');
@@ -204,10 +237,69 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
       {subTab === 'buscar_aulas' && (
         <div className="space-y-6">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs search-container transition-colors duration-200">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>Buscar Aulas Disponibles para un Horario Específico</span>
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-cyan-700 dark:text-cyan-400" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Buscar Aulas Disponibles para un Horario Específico
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Selecciona cualquier horario del día o ingresa las horas manualmente
+                  </p>
+                </div>
+              </div>
+
+              {/* Modo de selección: Desplegable o Manual */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl self-start sm:self-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setTimeInputMode('dropdown')}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                    timeInputMode === 'dropdown'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Lista desplegable (Día completo)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeInputMode('manual')}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                    timeInputMode === 'manual'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Ingresar manual (HH:MM)
+                </button>
+              </div>
+            </div>
+
+            {/* Atajos Rápidos */}
+            <div className="mb-4 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-600" /> Atajos de horario:
+              </span>
+              {PRESET_RANGES.map(preset => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => {
+                    setStartTime(preset.start);
+                    setEndTime(preset.end);
+                  }}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                    startTime === preset.start && endTime === preset.end
+                      ? 'bg-cyan-700 text-white font-semibold shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
               
@@ -229,34 +321,60 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
 
               {/* Start Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  Hora Inicio
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Hora Inicio</span>
+                  {timeInputMode === 'manual' && <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-normal">07:00 a 22:00</span>}
                 </label>
-                <select
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
-                >
-                  {TIME_OPTIONS.filter(t => t < endTime).map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                {timeInputMode === 'dropdown' ? (
+                  <select
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  >
+                    {TIME_OPTIONS.filter(t => t < '22:00').map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="time"
+                    min="07:00"
+                    max="22:00"
+                    step="1800"
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  />
+                )}
               </div>
 
               {/* End Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  Hora Fin
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Hora Fin</span>
+                  {timeInputMode === 'manual' && <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-normal">07:00 a 22:00</span>}
                 </label>
-                <select
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
-                >
-                  {TIME_OPTIONS.filter(t => t > startTime).map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                {timeInputMode === 'dropdown' ? (
+                  <select
+                    value={endTime}
+                    onChange={(e) => handleEndTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  >
+                    {TIME_OPTIONS.filter(t => t > '07:00').map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="time"
+                    min="07:00"
+                    max="22:00"
+                    step="1800"
+                    value={endTime}
+                    onChange={(e) => handleEndTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  />
+                )}
               </div>
 
               {/* Text filter for room name */}
@@ -268,12 +386,29 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
                   type="text"
                   value={roomFilterText}
                   onChange={(e) => setRoomFilterText(e.target.value)}
-                  placeholder="Ej. S1, CPB, Edificio 14..."
+                  placeholder="Ej. S1, CCL, SFE, Edificio 14..."
                   className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
                 />
               </div>
 
             </div>
+
+            {/* Validation warning if range is invalid */}
+            {timeToMinutes(startTime) >= timeToMinutes(endTime) && (
+              <div className="mt-3.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex flex-wrap items-center justify-between gap-2">
+                <span>Aviso: La hora de inicio ({startTime}) debe ser menor que la hora fin ({endTime}).</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextEnd = Math.min(22 * 60, timeToMinutes(startTime) + 60);
+                    setEndTime(minutesToTime(nextEnd));
+                  }}
+                  className="px-2.5 py-1 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                >
+                  Ajustar hora fin (+1 hora)
+                </button>
+              </div>
+            )}
 
             {/* Filter Toggle */}
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -361,10 +496,69 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
       {subTab === 'buscar_profs' && (
         <div className="space-y-6">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs search-container transition-colors duration-200">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-              <User className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
-              <span>Buscar Docentes Disponibles para un Horario Específico</span>
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <User className="w-5 h-5 text-cyan-700 dark:text-cyan-400" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Buscar Docentes Disponibles para un Horario Específico
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Selecciona cualquier horario del día o ingresa las horas manualmente
+                  </p>
+                </div>
+              </div>
+
+              {/* Modo de selección: Desplegable o Manual */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl self-start sm:self-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setTimeInputMode('dropdown')}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                    timeInputMode === 'dropdown'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Lista desplegable (Día completo)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeInputMode('manual')}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                    timeInputMode === 'manual'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  }`}
+                >
+                  Ingresar manual (HH:MM)
+                </button>
+              </div>
+            </div>
+
+            {/* Atajos Rápidos */}
+            <div className="mb-4 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-600" /> Atajos de horario:
+              </span>
+              {PRESET_RANGES.map(preset => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => {
+                    setStartTime(preset.start);
+                    setEndTime(preset.end);
+                  }}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                    startTime === preset.start && endTime === preset.end
+                      ? 'bg-cyan-700 text-white font-semibold shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
               
@@ -386,34 +580,60 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
 
               {/* Start Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  Hora Inicio
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Hora Inicio</span>
+                  {timeInputMode === 'manual' && <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-normal">07:00 a 22:00</span>}
                 </label>
-                <select
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
-                >
-                  {TIME_OPTIONS.filter(t => t < endTime).map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                {timeInputMode === 'dropdown' ? (
+                  <select
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  >
+                    {TIME_OPTIONS.filter(t => t < '22:00').map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="time"
+                    min="07:00"
+                    max="22:00"
+                    step="1800"
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  />
+                )}
               </div>
 
               {/* End Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  Hora Fin
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Hora Fin</span>
+                  {timeInputMode === 'manual' && <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-normal">07:00 a 22:00</span>}
                 </label>
-                <select
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
-                >
-                  {TIME_OPTIONS.filter(t => t > startTime).map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                {timeInputMode === 'dropdown' ? (
+                  <select
+                    value={endTime}
+                    onChange={(e) => handleEndTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  >
+                    {TIME_OPTIONS.filter(t => t > '07:00').map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="time"
+                    min="07:00"
+                    max="22:00"
+                    step="1800"
+                    value={endTime}
+                    onChange={(e) => handleEndTimeChange(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                  />
+                )}
               </div>
 
               {/* Text filter for prof name */}
@@ -431,6 +651,23 @@ export const DisponibilidadView: React.FC<DisponibilidadViewProps> = ({
               </div>
 
             </div>
+
+            {/* Validation warning if range is invalid */}
+            {timeToMinutes(startTime) >= timeToMinutes(endTime) && (
+              <div className="mt-3.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex flex-wrap items-center justify-between gap-2">
+                <span>Aviso: La hora de inicio ({startTime}) debe ser menor que la hora fin ({endTime}).</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextEnd = Math.min(22 * 60, timeToMinutes(startTime) + 60);
+                    setEndTime(minutesToTime(nextEnd));
+                  }}
+                  className="px-2.5 py-1 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                >
+                  Ajustar hora fin (+1 hora)
+                </button>
+              </div>
+            )}
 
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
